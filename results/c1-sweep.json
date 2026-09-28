@@ -1,0 +1,1684 @@
+{
+  "experiment": "c1-renderer-sweep",
+  "repo": "chiaroscuro-embedding",
+  "question": "which chiaroscuro render settings leave enough scene information in the TEXT for a text-only reader to recover?",
+  "scene": "mock-mirror (static key light, shaded sphere, 2 rotating bars, static checker; light/checker frozen to avoid confounds)",
+  "data": {
+    "n_train": 280,
+    "n_val": 40,
+    "n_test": 80,
+    "sampling": "scene params i.i.d. uniform per frame, disjoint seeds",
+    "targets": [
+      "sphere_x",
+      "sphere_y",
+      "bar_angle_sin2",
+      "bar_angle_cos2"
+    ]
+  },
+  "readers": {
+    "ridge": "exact dual kernel ridge on native text features, alpha in [10,100,1000] picked on val",
+    "mlp": "PCA-100 -> StandardScaler -> sklearn MLPRegressor(64)",
+    "text_features": "per cell: tone-ramp index (normalized), edge level, edge dir x/y \u2014 a lossless read of the glyph grid"
+  },
+  "scoring": {
+    "per_param": "max(ridge, mlp) test R^2",
+    "bar_angle": "min(R2(sin2a), R2(cos2a)) \u2014 both circular components required",
+    "gate": "KEEP iff some setting recovers >= 2/3 params at test R^2 >= 0.5 (chance ~ 0)"
+  },
+  "chance_empirical": {
+    "method": "ridge with permuted train labels, 20 shuffles, best setting",
+    "mean_test_r2": {
+      "sphere_x": -0.4658737778663635,
+      "sphere_y": -0.5739417314529419,
+      "bar_angle": -0.5576352536678314,
+      "bar_angle_sin2": -0.44055214524269104,
+      "bar_angle_cos2": -0.4275144159793854
+    }
+  },
+  "verdict": "KEEP",
+  "verdict_detail": "best setting 'edge|style=emboss' recovers 3/3 params at R^2 >= 0.5",
+  "n_settings": 34,
+  "top_k": [
+    {
+      "name": "edge|style=emboss",
+      "dials": {
+        "density": 100,
+        "ramp": "classic",
+        "tone_amt": 0,
+        "edge_amt": 100,
+        "edge_thresh": 4,
+        "edge_gain": 10,
+        "edge_style": "emboss",
+        "relief": 70,
+        "contrast": 25,
+        "gamma": 100,
+        "posterize": 0
+      },
+      "n_text_features": 30000,
+      "ridge_alpha": 10.0,
+      "ridge_r2": {
+        "sphere_x": 0.9865859150886536,
+        "sphere_y": 0.9807469248771667,
+        "bar_angle_sin2": 0.984999418258667,
+        "bar_angle_cos2": 0.9800918102264404,
+        "bar_angle": 0.9800918102264404
+      },
+      "mlp_r2": {
+        "sphere_x": 0.7490779161453247,
+        "sphere_y": 0.7703981399536133,
+        "bar_angle_sin2": 0.8250246644020081,
+        "bar_angle_cos2": 0.8383336067199707,
+        "bar_angle": 0.8250246644020081
+      },
+      "best_param_r2": {
+        "sphere_x": 0.9865859150886536,
+        "sphere_y": 0.9807469248771667,
+        "bar_angle": 0.9800918102264404
+      },
+      "n_params_recovered_ge_0.5": 3,
+      "mean_best_r2": 0.9824748833974203
+    },
+    {
+      "name": "preset|green-matrix",
+      "dials": {
+        "density": 100,
+        "ramp": "classic",
+        "tone_amt": 100,
+        "edge_amt": 20,
+        "edge_thresh": 4,
+        "edge_gain": 10,
+        "edge_style": "sobel",
+        "relief": 25,
+        "contrast": 25,
+        "gamma": 100,
+        "posterize": 0
+      },
+      "n_text_features": 30000,
+      "ridge_alpha": 10.0,
+      "ridge_r2": {
+        "sphere_x": 0.9828812479972839,
+        "sphere_y": 0.9719841480255127,
+        "bar_angle_sin2": 0.9881555438041687,
+        "bar_angle_cos2": 0.9870319962501526,
+        "bar_angle": 0.9870319962501526
+      },
+      "mlp_r2": {
+        "sphere_x": 0.8281193375587463,
+        "sphere_y": 0.7683775424957275,
+        "bar_angle_sin2": 0.8248186111450195,
+        "bar_angle_cos2": 0.856817364692688,
+        "bar_angle": 0.8248186111450195
+      },
+      "best_param_r2": {
+        "sphere_x": 0.9828812479972839,
+        "sphere_y": 0.9719841480255127,
+        "bar_angle": 0.9870319962501526
+      },
+      "n_params_recovered_ge_0.5": 3,
+      "mean_best_r2": 0.980632464090983
+    },
+    {
+      "name": "preset|sculptor",
+      "dials": {
+        "density": 100,
+        "ramp": "fine",
+        "tone_amt": 100,
+        "edge_amt": 100,
+        "edge_thresh": 4,
+        "edge_gain": 8,
+        "edge_style": "sobel",
+        "relief": 55,
+        "contrast": 25,
+        "gamma": 100,
+        "posterize": 0
+      },
+      "n_text_features": 30000,
+      "ridge_alpha": 10.0,
+      "ridge_r2": {
+        "sphere_x": 0.9823473691940308,
+        "sphere_y": 0.9719342589378357,
+        "bar_angle_sin2": 0.9883444309234619,
+        "bar_angle_cos2": 0.9868295192718506,
+        "bar_angle": 0.9868295192718506
+      },
+      "mlp_r2": {
+        "sphere_x": 0.7731842398643494,
+        "sphere_y": 0.6871767044067383,
+        "bar_angle_sin2": 0.8452014327049255,
+        "bar_angle_cos2": 0.822070300579071,
+        "bar_angle": 0.822070300579071
+      },
+      "best_param_r2": {
+        "sphere_x": 0.9823473691940308,
+        "sphere_y": 0.9719342589378357,
+        "bar_angle": 0.9868295192718506
+      },
+      "n_params_recovered_ge_0.5": 3,
+      "mean_best_r2": 0.9803703824679056
+    },
+    {
+      "name": "mix|contrast=10",
+      "dials": {
+        "density": 100,
+        "ramp": "classic",
+        "tone_amt": 100,
+        "edge_amt": 60,
+        "edge_thresh": 4,
+        "edge_gain": 10,
+        "edge_style": "sobel",
+        "relief": 70,
+        "contrast": 10,
+        "gamma": 100,
+        "posterize": 0
+      },
+      "n_text_features": 30000,
+      "ridge_alpha": 10.0,
+      "ridge_r2": {
+        "sphere_x": 0.9845041036605835,
+        "sphere_y": 0.975371241569519,
+        "bar_angle_sin2": 0.9831621646881104,
+        "bar_angle_cos2": 0.9797764420509338,
+        "bar_angle": 0.9797764420509338
+      },
+      "mlp_r2": {
+        "sphere_x": 0.7749223113059998,
+        "sphere_y": 0.7555598616600037,
+        "bar_angle_sin2": 0.7979658842086792,
+        "bar_angle_cos2": 0.8326050043106079,
+        "bar_angle": 0.7979658842086792
+      },
+      "best_param_r2": {
+        "sphere_x": 0.9845041036605835,
+        "sphere_y": 0.975371241569519,
+        "bar_angle": 0.9797764420509338
+      },
+      "n_params_recovered_ge_0.5": 3,
+      "mean_best_r2": 0.9798839290936788
+    },
+    {
+      "name": "mix|ramp=binary",
+      "dials": {
+        "density": 100,
+        "ramp": "binary",
+        "tone_amt": 100,
+        "edge_amt": 60,
+        "edge_thresh": 4,
+        "edge_gain": 10,
+        "edge_style": "sobel",
+        "relief": 70,
+        "contrast": 25,
+        "gamma": 100,
+        "posterize": 0
+      },
+      "n_text_features": 30000,
+      "ridge_alpha": 10.0,
+      "ridge_r2": {
+        "sphere_x": 0.9813497066497803,
+        "sphere_y": 0.9697797298431396,
+        "bar_angle_sin2": 0.9879733920097351,
+        "bar_angle_cos2": 0.9890172481536865,
+        "bar_angle": 0.9879733920097351
+      },
+      "mlp_r2": {
+        "sphere_x": 0.6613823771476746,
+        "sphere_y": 0.7555525302886963,
+        "bar_angle_sin2": 0.839360237121582,
+        "bar_angle_cos2": 0.7975335121154785,
+        "bar_angle": 0.7975335121154785
+      },
+      "best_param_r2": {
+        "sphere_x": 0.9813497066497803,
+        "sphere_y": 0.9697797298431396,
+        "bar_angle": 0.9879733920097351
+      },
+      "n_params_recovered_ge_0.5": 3,
+      "mean_best_r2": 0.9797009428342184
+    },
+    {
+      "name": "tone|ramp=binary",
+      "dials": {
+        "density": 100,
+        "ramp": "binary",
+        "tone_amt": 100,
+        "edge_amt": 0,
+        "edge_thresh": 4,
+        "edge_gain": 10,
+        "edge_style": "sobel",
+        "relief": 70,
+        "contrast": 25,
+        "gamma": 100,
+        "posterize": 0
+      },
+      "n_text_features": 30000,
+      "ridge_alpha": 10.0,
+      "ridge_r2": {
+        "sphere_x": 0.9761224985122681,
+        "sphere_y": 0.9715063571929932,
+        "bar_angle_sin2": 0.9912091493606567,
+        "bar_angle_cos2": 0.990805447101593,
+        "bar_angle": 0.990805447101593
+      },
+      "mlp_r2": {
+        "sphere_x": 0.8037844896316528,
+        "sphere_y": 0.7883466482162476,
+        "bar_angle_sin2": 0.80548495054245,
+        "bar_angle_cos2": 0.8221814632415771,
+        "bar_angle": 0.80548495054245
+      },
+      "best_param_r2": {
+        "sphere_x": 0.9761224985122681,
+        "sphere_y": 0.9715063571929932,
+        "bar_angle": 0.990805447101593
+      },
+      "n_params_recovered_ge_0.5": 3,
+      "mean_best_r2": 0.979478100935618
+    },
+    {
+      "name": "mix|ramp=blocks",
+      "dials": {
+        "density": 100,
+        "ramp": "blocks",
+        "tone_amt": 100,
+        "edge_amt": 60,
+        "edge_thresh": 4,
+        "edge_gain": 10,
+        "edge_style": "sobel",
+        "relief": 70,
+        "contrast": 25,
+        "gamma": 100,
+        "posterize": 0
+      },
+      "n_text_features": 30000,
+      "ridge_alpha": 10.0,
+      "ridge_r2": {
+        "sphere_x": 0.9806806445121765,
+        "sphere_y": 0.9690698981285095,
+        "bar_angle_sin2": 0.9888827800750732,
+        "bar_angle_cos2": 0.9880634546279907,
+        "bar_angle": 0.9880634546279907
+      },
+      "mlp_r2": {
+        "sphere_x": 0.8058292865753174,
+        "sphere_y": 0.690447211265564,
+        "bar_angle_sin2": 0.8538159132003784,
+        "bar_angle_cos2": 0.8670751452445984,
+        "bar_angle": 0.8538159132003784
+      },
+      "best_param_r2": {
+        "sphere_x": 0.9806806445121765,
+        "sphere_y": 0.9690698981285095,
+        "bar_angle": 0.9880634546279907
+      },
+      "n_params_recovered_ge_0.5": 3,
+      "mean_best_r2": 0.9792713324228922
+    },
+    {
+      "name": "mix|ramp=minimal",
+      "dials": {
+        "density": 100,
+        "ramp": "minimal",
+        "tone_amt": 100,
+        "edge_amt": 60,
+        "edge_thresh": 4,
+        "edge_gain": 10,
+        "edge_style": "sobel",
+        "relief": 70,
+        "contrast": 25,
+        "gamma": 100,
+        "posterize": 0
+      },
+      "n_text_features": 30000,
+      "ridge_alpha": 10.0,
+      "ridge_r2": {
+        "sphere_x": 0.9806806445121765,
+        "sphere_y": 0.9690698981285095,
+        "bar_angle_sin2": 0.9888827800750732,
+        "bar_angle_cos2": 0.9880634546279907,
+        "bar_angle": 0.9880634546279907
+      },
+      "mlp_r2": {
+        "sphere_x": 0.8058292865753174,
+        "sphere_y": 0.690447211265564,
+        "bar_angle_sin2": 0.8538159132003784,
+        "bar_angle_cos2": 0.8670751452445984,
+        "bar_angle": 0.8538159132003784
+      },
+      "best_param_r2": {
+        "sphere_x": 0.9806806445121765,
+        "sphere_y": 0.9690698981285095,
+        "bar_angle": 0.9880634546279907
+      },
+      "n_params_recovered_ge_0.5": 3,
+      "mean_best_r2": 0.9792713324228922
+    }
+  ],
+  "settings": [
+    {
+      "name": "edge|style=emboss",
+      "dials": {
+        "density": 100,
+        "ramp": "classic",
+        "tone_amt": 0,
+        "edge_amt": 100,
+        "edge_thresh": 4,
+        "edge_gain": 10,
+        "edge_style": "emboss",
+        "relief": 70,
+        "contrast": 25,
+        "gamma": 100,
+        "posterize": 0
+      },
+      "n_text_features": 30000,
+      "ridge_alpha": 10.0,
+      "ridge_r2": {
+        "sphere_x": 0.9865859150886536,
+        "sphere_y": 0.9807469248771667,
+        "bar_angle_sin2": 0.984999418258667,
+        "bar_angle_cos2": 0.9800918102264404,
+        "bar_angle": 0.9800918102264404
+      },
+      "mlp_r2": {
+        "sphere_x": 0.7490779161453247,
+        "sphere_y": 0.7703981399536133,
+        "bar_angle_sin2": 0.8250246644020081,
+        "bar_angle_cos2": 0.8383336067199707,
+        "bar_angle": 0.8250246644020081
+      },
+      "best_param_r2": {
+        "sphere_x": 0.9865859150886536,
+        "sphere_y": 0.9807469248771667,
+        "bar_angle": 0.9800918102264404
+      },
+      "n_params_recovered_ge_0.5": 3,
+      "mean_best_r2": 0.9824748833974203
+    },
+    {
+      "name": "preset|green-matrix",
+      "dials": {
+        "density": 100,
+        "ramp": "classic",
+        "tone_amt": 100,
+        "edge_amt": 20,
+        "edge_thresh": 4,
+        "edge_gain": 10,
+        "edge_style": "sobel",
+        "relief": 25,
+        "contrast": 25,
+        "gamma": 100,
+        "posterize": 0
+      },
+      "n_text_features": 30000,
+      "ridge_alpha": 10.0,
+      "ridge_r2": {
+        "sphere_x": 0.9828812479972839,
+        "sphere_y": 0.9719841480255127,
+        "bar_angle_sin2": 0.9881555438041687,
+        "bar_angle_cos2": 0.9870319962501526,
+        "bar_angle": 0.9870319962501526
+      },
+      "mlp_r2": {
+        "sphere_x": 0.8281193375587463,
+        "sphere_y": 0.7683775424957275,
+        "bar_angle_sin2": 0.8248186111450195,
+        "bar_angle_cos2": 0.856817364692688,
+        "bar_angle": 0.8248186111450195
+      },
+      "best_param_r2": {
+        "sphere_x": 0.9828812479972839,
+        "sphere_y": 0.9719841480255127,
+        "bar_angle": 0.9870319962501526
+      },
+      "n_params_recovered_ge_0.5": 3,
+      "mean_best_r2": 0.980632464090983
+    },
+    {
+      "name": "preset|sculptor",
+      "dials": {
+        "density": 100,
+        "ramp": "fine",
+        "tone_amt": 100,
+        "edge_amt": 100,
+        "edge_thresh": 4,
+        "edge_gain": 8,
+        "edge_style": "sobel",
+        "relief": 55,
+        "contrast": 25,
+        "gamma": 100,
+        "posterize": 0
+      },
+      "n_text_features": 30000,
+      "ridge_alpha": 10.0,
+      "ridge_r2": {
+        "sphere_x": 0.9823473691940308,
+        "sphere_y": 0.9719342589378357,
+        "bar_angle_sin2": 0.9883444309234619,
+        "bar_angle_cos2": 0.9868295192718506,
+        "bar_angle": 0.9868295192718506
+      },
+      "mlp_r2": {
+        "sphere_x": 0.7731842398643494,
+        "sphere_y": 0.6871767044067383,
+        "bar_angle_sin2": 0.8452014327049255,
+        "bar_angle_cos2": 0.822070300579071,
+        "bar_angle": 0.822070300579071
+      },
+      "best_param_r2": {
+        "sphere_x": 0.9823473691940308,
+        "sphere_y": 0.9719342589378357,
+        "bar_angle": 0.9868295192718506
+      },
+      "n_params_recovered_ge_0.5": 3,
+      "mean_best_r2": 0.9803703824679056
+    },
+    {
+      "name": "mix|contrast=10",
+      "dials": {
+        "density": 100,
+        "ramp": "classic",
+        "tone_amt": 100,
+        "edge_amt": 60,
+        "edge_thresh": 4,
+        "edge_gain": 10,
+        "edge_style": "sobel",
+        "relief": 70,
+        "contrast": 10,
+        "gamma": 100,
+        "posterize": 0
+      },
+      "n_text_features": 30000,
+      "ridge_alpha": 10.0,
+      "ridge_r2": {
+        "sphere_x": 0.9845041036605835,
+        "sphere_y": 0.975371241569519,
+        "bar_angle_sin2": 0.9831621646881104,
+        "bar_angle_cos2": 0.9797764420509338,
+        "bar_angle": 0.9797764420509338
+      },
+      "mlp_r2": {
+        "sphere_x": 0.7749223113059998,
+        "sphere_y": 0.7555598616600037,
+        "bar_angle_sin2": 0.7979658842086792,
+        "bar_angle_cos2": 0.8326050043106079,
+        "bar_angle": 0.7979658842086792
+      },
+      "best_param_r2": {
+        "sphere_x": 0.9845041036605835,
+        "sphere_y": 0.975371241569519,
+        "bar_angle": 0.9797764420509338
+      },
+      "n_params_recovered_ge_0.5": 3,
+      "mean_best_r2": 0.9798839290936788
+    },
+    {
+      "name": "mix|ramp=binary",
+      "dials": {
+        "density": 100,
+        "ramp": "binary",
+        "tone_amt": 100,
+        "edge_amt": 60,
+        "edge_thresh": 4,
+        "edge_gain": 10,
+        "edge_style": "sobel",
+        "relief": 70,
+        "contrast": 25,
+        "gamma": 100,
+        "posterize": 0
+      },
+      "n_text_features": 30000,
+      "ridge_alpha": 10.0,
+      "ridge_r2": {
+        "sphere_x": 0.9813497066497803,
+        "sphere_y": 0.9697797298431396,
+        "bar_angle_sin2": 0.9879733920097351,
+        "bar_angle_cos2": 0.9890172481536865,
+        "bar_angle": 0.9879733920097351
+      },
+      "mlp_r2": {
+        "sphere_x": 0.6613823771476746,
+        "sphere_y": 0.7555525302886963,
+        "bar_angle_sin2": 0.839360237121582,
+        "bar_angle_cos2": 0.7975335121154785,
+        "bar_angle": 0.7975335121154785
+      },
+      "best_param_r2": {
+        "sphere_x": 0.9813497066497803,
+        "sphere_y": 0.9697797298431396,
+        "bar_angle": 0.9879733920097351
+      },
+      "n_params_recovered_ge_0.5": 3,
+      "mean_best_r2": 0.9797009428342184
+    },
+    {
+      "name": "tone|ramp=binary",
+      "dials": {
+        "density": 100,
+        "ramp": "binary",
+        "tone_amt": 100,
+        "edge_amt": 0,
+        "edge_thresh": 4,
+        "edge_gain": 10,
+        "edge_style": "sobel",
+        "relief": 70,
+        "contrast": 25,
+        "gamma": 100,
+        "posterize": 0
+      },
+      "n_text_features": 30000,
+      "ridge_alpha": 10.0,
+      "ridge_r2": {
+        "sphere_x": 0.9761224985122681,
+        "sphere_y": 0.9715063571929932,
+        "bar_angle_sin2": 0.9912091493606567,
+        "bar_angle_cos2": 0.990805447101593,
+        "bar_angle": 0.990805447101593
+      },
+      "mlp_r2": {
+        "sphere_x": 0.8037844896316528,
+        "sphere_y": 0.7883466482162476,
+        "bar_angle_sin2": 0.80548495054245,
+        "bar_angle_cos2": 0.8221814632415771,
+        "bar_angle": 0.80548495054245
+      },
+      "best_param_r2": {
+        "sphere_x": 0.9761224985122681,
+        "sphere_y": 0.9715063571929932,
+        "bar_angle": 0.990805447101593
+      },
+      "n_params_recovered_ge_0.5": 3,
+      "mean_best_r2": 0.979478100935618
+    },
+    {
+      "name": "mix|ramp=blocks",
+      "dials": {
+        "density": 100,
+        "ramp": "blocks",
+        "tone_amt": 100,
+        "edge_amt": 60,
+        "edge_thresh": 4,
+        "edge_gain": 10,
+        "edge_style": "sobel",
+        "relief": 70,
+        "contrast": 25,
+        "gamma": 100,
+        "posterize": 0
+      },
+      "n_text_features": 30000,
+      "ridge_alpha": 10.0,
+      "ridge_r2": {
+        "sphere_x": 0.9806806445121765,
+        "sphere_y": 0.9690698981285095,
+        "bar_angle_sin2": 0.9888827800750732,
+        "bar_angle_cos2": 0.9880634546279907,
+        "bar_angle": 0.9880634546279907
+      },
+      "mlp_r2": {
+        "sphere_x": 0.8058292865753174,
+        "sphere_y": 0.690447211265564,
+        "bar_angle_sin2": 0.8538159132003784,
+        "bar_angle_cos2": 0.8670751452445984,
+        "bar_angle": 0.8538159132003784
+      },
+      "best_param_r2": {
+        "sphere_x": 0.9806806445121765,
+        "sphere_y": 0.9690698981285095,
+        "bar_angle": 0.9880634546279907
+      },
+      "n_params_recovered_ge_0.5": 3,
+      "mean_best_r2": 0.9792713324228922
+    },
+    {
+      "name": "mix|ramp=minimal",
+      "dials": {
+        "density": 100,
+        "ramp": "minimal",
+        "tone_amt": 100,
+        "edge_amt": 60,
+        "edge_thresh": 4,
+        "edge_gain": 10,
+        "edge_style": "sobel",
+        "relief": 70,
+        "contrast": 25,
+        "gamma": 100,
+        "posterize": 0
+      },
+      "n_text_features": 30000,
+      "ridge_alpha": 10.0,
+      "ridge_r2": {
+        "sphere_x": 0.9806806445121765,
+        "sphere_y": 0.9690698981285095,
+        "bar_angle_sin2": 0.9888827800750732,
+        "bar_angle_cos2": 0.9880634546279907,
+        "bar_angle": 0.9880634546279907
+      },
+      "mlp_r2": {
+        "sphere_x": 0.8058292865753174,
+        "sphere_y": 0.690447211265564,
+        "bar_angle_sin2": 0.8538159132003784,
+        "bar_angle_cos2": 0.8670751452445984,
+        "bar_angle": 0.8538159132003784
+      },
+      "best_param_r2": {
+        "sphere_x": 0.9806806445121765,
+        "sphere_y": 0.9690698981285095,
+        "bar_angle": 0.9880634546279907
+      },
+      "n_params_recovered_ge_0.5": 3,
+      "mean_best_r2": 0.9792713324228922
+    },
+    {
+      "name": "mix|ramp=classic",
+      "dials": {
+        "density": 100,
+        "ramp": "classic",
+        "tone_amt": 100,
+        "edge_amt": 60,
+        "edge_thresh": 4,
+        "edge_gain": 10,
+        "edge_style": "sobel",
+        "relief": 70,
+        "contrast": 25,
+        "gamma": 100,
+        "posterize": 0
+      },
+      "n_text_features": 30000,
+      "ridge_alpha": 10.0,
+      "ridge_r2": {
+        "sphere_x": 0.9804695844650269,
+        "sphere_y": 0.9692138433456421,
+        "bar_angle_sin2": 0.9879814982414246,
+        "bar_angle_cos2": 0.9870477914810181,
+        "bar_angle": 0.9870477914810181
+      },
+      "mlp_r2": {
+        "sphere_x": 0.8383191823959351,
+        "sphere_y": 0.7340827584266663,
+        "bar_angle_sin2": 0.8115143775939941,
+        "bar_angle_cos2": 0.8340149521827698,
+        "bar_angle": 0.8115143775939941
+      },
+      "best_param_r2": {
+        "sphere_x": 0.9804695844650269,
+        "sphere_y": 0.9692138433456421,
+        "bar_angle": 0.9870477914810181
+      },
+      "n_params_recovered_ge_0.5": 3,
+      "mean_best_r2": 0.9789104064305624
+    },
+    {
+      "name": "mix|edgeAmt=10",
+      "dials": {
+        "density": 100,
+        "ramp": "classic",
+        "tone_amt": 100,
+        "edge_amt": 10,
+        "edge_thresh": 4,
+        "edge_gain": 10,
+        "edge_style": "sobel",
+        "relief": 70,
+        "contrast": 25,
+        "gamma": 100,
+        "posterize": 0
+      },
+      "n_text_features": 30000,
+      "ridge_alpha": 10.0,
+      "ridge_r2": {
+        "sphere_x": 0.9804695844650269,
+        "sphere_y": 0.9692138433456421,
+        "bar_angle_sin2": 0.9879814982414246,
+        "bar_angle_cos2": 0.9870477914810181,
+        "bar_angle": 0.9870477914810181
+      },
+      "mlp_r2": {
+        "sphere_x": 0.8383191823959351,
+        "sphere_y": 0.7340827584266663,
+        "bar_angle_sin2": 0.8115143775939941,
+        "bar_angle_cos2": 0.8340149521827698,
+        "bar_angle": 0.8115143775939941
+      },
+      "best_param_r2": {
+        "sphere_x": 0.9804695844650269,
+        "sphere_y": 0.9692138433456421,
+        "bar_angle": 0.9870477914810181
+      },
+      "n_params_recovered_ge_0.5": 3,
+      "mean_best_r2": 0.9789104064305624
+    },
+    {
+      "name": "mix|edgeAmt=25",
+      "dials": {
+        "density": 100,
+        "ramp": "classic",
+        "tone_amt": 100,
+        "edge_amt": 25,
+        "edge_thresh": 4,
+        "edge_gain": 10,
+        "edge_style": "sobel",
+        "relief": 70,
+        "contrast": 25,
+        "gamma": 100,
+        "posterize": 0
+      },
+      "n_text_features": 30000,
+      "ridge_alpha": 10.0,
+      "ridge_r2": {
+        "sphere_x": 0.9804695844650269,
+        "sphere_y": 0.9692138433456421,
+        "bar_angle_sin2": 0.9879814982414246,
+        "bar_angle_cos2": 0.9870477914810181,
+        "bar_angle": 0.9870477914810181
+      },
+      "mlp_r2": {
+        "sphere_x": 0.8383191823959351,
+        "sphere_y": 0.7340827584266663,
+        "bar_angle_sin2": 0.8115143775939941,
+        "bar_angle_cos2": 0.8340149521827698,
+        "bar_angle": 0.8115143775939941
+      },
+      "best_param_r2": {
+        "sphere_x": 0.9804695844650269,
+        "sphere_y": 0.9692138433456421,
+        "bar_angle": 0.9870477914810181
+      },
+      "n_params_recovered_ge_0.5": 3,
+      "mean_best_r2": 0.9789104064305624
+    },
+    {
+      "name": "mix|edgeAmt=50",
+      "dials": {
+        "density": 100,
+        "ramp": "classic",
+        "tone_amt": 100,
+        "edge_amt": 50,
+        "edge_thresh": 4,
+        "edge_gain": 10,
+        "edge_style": "sobel",
+        "relief": 70,
+        "contrast": 25,
+        "gamma": 100,
+        "posterize": 0
+      },
+      "n_text_features": 30000,
+      "ridge_alpha": 10.0,
+      "ridge_r2": {
+        "sphere_x": 0.9804695844650269,
+        "sphere_y": 0.9692138433456421,
+        "bar_angle_sin2": 0.9879814982414246,
+        "bar_angle_cos2": 0.9870477914810181,
+        "bar_angle": 0.9870477914810181
+      },
+      "mlp_r2": {
+        "sphere_x": 0.8383191823959351,
+        "sphere_y": 0.7340827584266663,
+        "bar_angle_sin2": 0.8115143775939941,
+        "bar_angle_cos2": 0.8340149521827698,
+        "bar_angle": 0.8115143775939941
+      },
+      "best_param_r2": {
+        "sphere_x": 0.9804695844650269,
+        "sphere_y": 0.9692138433456421,
+        "bar_angle": 0.9870477914810181
+      },
+      "n_params_recovered_ge_0.5": 3,
+      "mean_best_r2": 0.9789104064305624
+    },
+    {
+      "name": "tone|ramp=classic",
+      "dials": {
+        "density": 100,
+        "ramp": "classic",
+        "tone_amt": 100,
+        "edge_amt": 0,
+        "edge_thresh": 4,
+        "edge_gain": 10,
+        "edge_style": "sobel",
+        "relief": 70,
+        "contrast": 25,
+        "gamma": 100,
+        "posterize": 0
+      },
+      "n_text_features": 30000,
+      "ridge_alpha": 10.0,
+      "ridge_r2": {
+        "sphere_x": 0.9758060574531555,
+        "sphere_y": 0.9716215133666992,
+        "bar_angle_sin2": 0.9911520481109619,
+        "bar_angle_cos2": 0.9891524910926819,
+        "bar_angle": 0.9891524910926819
+      },
+      "mlp_r2": {
+        "sphere_x": 0.7192728519439697,
+        "sphere_y": 0.715060830116272,
+        "bar_angle_sin2": 0.7262600660324097,
+        "bar_angle_cos2": 0.7325799465179443,
+        "bar_angle": 0.7262600660324097
+      },
+      "best_param_r2": {
+        "sphere_x": 0.9758060574531555,
+        "sphere_y": 0.9716215133666992,
+        "bar_angle": 0.9891524910926819
+      },
+      "n_params_recovered_ge_0.5": 3,
+      "mean_best_r2": 0.9788600206375122
+    },
+    {
+      "name": "mix|ramp=fine",
+      "dials": {
+        "density": 100,
+        "ramp": "fine",
+        "tone_amt": 100,
+        "edge_amt": 60,
+        "edge_thresh": 4,
+        "edge_gain": 10,
+        "edge_style": "sobel",
+        "relief": 70,
+        "contrast": 25,
+        "gamma": 100,
+        "posterize": 0
+      },
+      "n_text_features": 30000,
+      "ridge_alpha": 10.0,
+      "ridge_r2": {
+        "sphere_x": 0.9803280234336853,
+        "sphere_y": 0.969196617603302,
+        "bar_angle_sin2": 0.9882278442382812,
+        "bar_angle_cos2": 0.9868695139884949,
+        "bar_angle": 0.9868695139884949
+      },
+      "mlp_r2": {
+        "sphere_x": 0.8531410694122314,
+        "sphere_y": 0.7793452739715576,
+        "bar_angle_sin2": 0.840775728225708,
+        "bar_angle_cos2": 0.8014418482780457,
+        "bar_angle": 0.8014418482780457
+      },
+      "best_param_r2": {
+        "sphere_x": 0.9803280234336853,
+        "sphere_y": 0.969196617603302,
+        "bar_angle": 0.9868695139884949
+      },
+      "n_params_recovered_ge_0.5": 3,
+      "mean_best_r2": 0.9787980516751608
+    },
+    {
+      "name": "edge|thr=8",
+      "dials": {
+        "density": 100,
+        "ramp": "classic",
+        "tone_amt": 0,
+        "edge_amt": 100,
+        "edge_thresh": 8,
+        "edge_gain": 10,
+        "edge_style": "sobel",
+        "relief": 70,
+        "contrast": 25,
+        "gamma": 100,
+        "posterize": 0
+      },
+      "n_text_features": 30000,
+      "ridge_alpha": 10.0,
+      "ridge_r2": {
+        "sphere_x": 0.9819879531860352,
+        "sphere_y": 0.9712634086608887,
+        "bar_angle_sin2": 0.982627809047699,
+        "bar_angle_cos2": 0.984053909778595,
+        "bar_angle": 0.982627809047699
+      },
+      "mlp_r2": {
+        "sphere_x": 0.663986325263977,
+        "sphere_y": 0.7173721790313721,
+        "bar_angle_sin2": 0.7892616987228394,
+        "bar_angle_cos2": 0.8424680233001709,
+        "bar_angle": 0.7892616987228394
+      },
+      "best_param_r2": {
+        "sphere_x": 0.9819879531860352,
+        "sphere_y": 0.9712634086608887,
+        "bar_angle": 0.982627809047699
+      },
+      "n_params_recovered_ge_0.5": 3,
+      "mean_best_r2": 0.9786263902982076
+    },
+    {
+      "name": "tone|posterize=6",
+      "dials": {
+        "density": 100,
+        "ramp": "classic",
+        "tone_amt": 100,
+        "edge_amt": 0,
+        "edge_thresh": 4,
+        "edge_gain": 10,
+        "edge_style": "sobel",
+        "relief": 70,
+        "contrast": 25,
+        "gamma": 100,
+        "posterize": 6
+      },
+      "n_text_features": 30000,
+      "ridge_alpha": 10.0,
+      "ridge_r2": {
+        "sphere_x": 0.9750073552131653,
+        "sphere_y": 0.970920205116272,
+        "bar_angle_sin2": 0.9898834824562073,
+        "bar_angle_cos2": 0.990913987159729,
+        "bar_angle": 0.9898834824562073
+      },
+      "mlp_r2": {
+        "sphere_x": 0.7645025253295898,
+        "sphere_y": 0.7074974775314331,
+        "bar_angle_sin2": 0.8697389364242554,
+        "bar_angle_cos2": 0.8148823380470276,
+        "bar_angle": 0.8148823380470276
+      },
+      "best_param_r2": {
+        "sphere_x": 0.9750073552131653,
+        "sphere_y": 0.970920205116272,
+        "bar_angle": 0.9898834824562073
+      },
+      "n_params_recovered_ge_0.5": 3,
+      "mean_best_r2": 0.9786036809285482
+    },
+    {
+      "name": "tone|ramp=stars",
+      "dials": {
+        "density": 100,
+        "ramp": "stars",
+        "tone_amt": 100,
+        "edge_amt": 0,
+        "edge_thresh": 4,
+        "edge_gain": 10,
+        "edge_style": "sobel",
+        "relief": 70,
+        "contrast": 25,
+        "gamma": 100,
+        "posterize": 0
+      },
+      "n_text_features": 30000,
+      "ridge_alpha": 10.0,
+      "ridge_r2": {
+        "sphere_x": 0.9739855527877808,
+        "sphere_y": 0.9735530614852905,
+        "bar_angle_sin2": 0.9901268482208252,
+        "bar_angle_cos2": 0.9871626496315002,
+        "bar_angle": 0.9871626496315002
+      },
+      "mlp_r2": {
+        "sphere_x": 0.6686585545539856,
+        "sphere_y": 0.675197184085846,
+        "bar_angle_sin2": 0.7819754481315613,
+        "bar_angle_cos2": 0.7021692991256714,
+        "bar_angle": 0.7021692991256714
+      },
+      "best_param_r2": {
+        "sphere_x": 0.9739855527877808,
+        "sphere_y": 0.9735530614852905,
+        "bar_angle": 0.9871626496315002
+      },
+      "n_params_recovered_ge_0.5": 3,
+      "mean_best_r2": 0.9782337546348572
+    },
+    {
+      "name": "tone|ramp=waves",
+      "dials": {
+        "density": 100,
+        "ramp": "waves",
+        "tone_amt": 100,
+        "edge_amt": 0,
+        "edge_thresh": 4,
+        "edge_gain": 10,
+        "edge_style": "sobel",
+        "relief": 70,
+        "contrast": 25,
+        "gamma": 100,
+        "posterize": 0
+      },
+      "n_text_features": 30000,
+      "ridge_alpha": 10.0,
+      "ridge_r2": {
+        "sphere_x": 0.9784652590751648,
+        "sphere_y": 0.9719171524047852,
+        "bar_angle_sin2": 0.9843049645423889,
+        "bar_angle_cos2": 0.9868570566177368,
+        "bar_angle": 0.9843049645423889
+      },
+      "mlp_r2": {
+        "sphere_x": 0.7682123780250549,
+        "sphere_y": 0.740710973739624,
+        "bar_angle_sin2": 0.7809566855430603,
+        "bar_angle_cos2": 0.7636531591415405,
+        "bar_angle": 0.7636531591415405
+      },
+      "best_param_r2": {
+        "sphere_x": 0.9784652590751648,
+        "sphere_y": 0.9719171524047852,
+        "bar_angle": 0.9843049645423889
+      },
+      "n_params_recovered_ge_0.5": 3,
+      "mean_best_r2": 0.9782291253407797
+    },
+    {
+      "name": "mix|density=130",
+      "dials": {
+        "density": 130,
+        "ramp": "classic",
+        "tone_amt": 100,
+        "edge_amt": 60,
+        "edge_thresh": 4,
+        "edge_gain": 10,
+        "edge_style": "sobel",
+        "relief": 70,
+        "contrast": 25,
+        "gamma": 100,
+        "posterize": 0
+      },
+      "n_text_features": 50440,
+      "ridge_alpha": 10.0,
+      "ridge_r2": {
+        "sphere_x": 0.9823887348175049,
+        "sphere_y": 0.9677047729492188,
+        "bar_angle_sin2": 0.9860536456108093,
+        "bar_angle_cos2": 0.984584629535675,
+        "bar_angle": 0.984584629535675
+      },
+      "mlp_r2": {
+        "sphere_x": 0.802819013595581,
+        "sphere_y": 0.7099363803863525,
+        "bar_angle_sin2": 0.8084192276000977,
+        "bar_angle_cos2": 0.8166583180427551,
+        "bar_angle": 0.8084192276000977
+      },
+      "best_param_r2": {
+        "sphere_x": 0.9823887348175049,
+        "sphere_y": 0.9677047729492188,
+        "bar_angle": 0.984584629535675
+      },
+      "n_params_recovered_ge_0.5": 3,
+      "mean_best_r2": 0.9782260457674662
+    },
+    {
+      "name": "tone|ramp=runes",
+      "dials": {
+        "density": 100,
+        "ramp": "runes",
+        "tone_amt": 100,
+        "edge_amt": 0,
+        "edge_thresh": 4,
+        "edge_gain": 10,
+        "edge_style": "sobel",
+        "relief": 70,
+        "contrast": 25,
+        "gamma": 100,
+        "posterize": 0
+      },
+      "n_text_features": 30000,
+      "ridge_alpha": 10.0,
+      "ridge_r2": {
+        "sphere_x": 0.9736908674240112,
+        "sphere_y": 0.9720889329910278,
+        "bar_angle_sin2": 0.9901537895202637,
+        "bar_angle_cos2": 0.9879230856895447,
+        "bar_angle": 0.9879230856895447
+      },
+      "mlp_r2": {
+        "sphere_x": 0.6713571548461914,
+        "sphere_y": 0.49252599477767944,
+        "bar_angle_sin2": 0.7299858331680298,
+        "bar_angle_cos2": 0.8026518821716309,
+        "bar_angle": 0.7299858331680298
+      },
+      "best_param_r2": {
+        "sphere_x": 0.9736908674240112,
+        "sphere_y": 0.9720889329910278,
+        "bar_angle": 0.9879230856895447
+      },
+      "n_params_recovered_ge_0.5": 3,
+      "mean_best_r2": 0.9779009620348612
+    },
+    {
+      "name": "edge|thr=4",
+      "dials": {
+        "density": 100,
+        "ramp": "classic",
+        "tone_amt": 0,
+        "edge_amt": 100,
+        "edge_thresh": 4,
+        "edge_gain": 10,
+        "edge_style": "sobel",
+        "relief": 70,
+        "contrast": 25,
+        "gamma": 100,
+        "posterize": 0
+      },
+      "n_text_features": 30000,
+      "ridge_alpha": 10.0,
+      "ridge_r2": {
+        "sphere_x": 0.980273425579071,
+        "sphere_y": 0.9680190682411194,
+        "bar_angle_sin2": 0.9853834509849548,
+        "bar_angle_cos2": 0.9866202473640442,
+        "bar_angle": 0.9853834509849548
+      },
+      "mlp_r2": {
+        "sphere_x": 0.777463972568512,
+        "sphere_y": 0.6802389621734619,
+        "bar_angle_sin2": 0.8476917743682861,
+        "bar_angle_cos2": 0.8928058743476868,
+        "bar_angle": 0.8476917743682861
+      },
+      "best_param_r2": {
+        "sphere_x": 0.980273425579071,
+        "sphere_y": 0.9680190682411194,
+        "bar_angle": 0.9853834509849548
+      },
+      "n_params_recovered_ge_0.5": 3,
+      "mean_best_r2": 0.9778919816017151
+    },
+    {
+      "name": "tone|ramp=fine",
+      "dials": {
+        "density": 100,
+        "ramp": "fine",
+        "tone_amt": 100,
+        "edge_amt": 0,
+        "edge_thresh": 4,
+        "edge_gain": 10,
+        "edge_style": "sobel",
+        "relief": 70,
+        "contrast": 25,
+        "gamma": 100,
+        "posterize": 0
+      },
+      "n_text_features": 30000,
+      "ridge_alpha": 10.0,
+      "ridge_r2": {
+        "sphere_x": 0.9743189811706543,
+        "sphere_y": 0.9726854562759399,
+        "bar_angle_sin2": 0.9908963441848755,
+        "bar_angle_cos2": 0.986352801322937,
+        "bar_angle": 0.986352801322937
+      },
+      "mlp_r2": {
+        "sphere_x": 0.772986888885498,
+        "sphere_y": 0.6255925297737122,
+        "bar_angle_sin2": 0.7371032238006592,
+        "bar_angle_cos2": 0.8182532787322998,
+        "bar_angle": 0.7371032238006592
+      },
+      "best_param_r2": {
+        "sphere_x": 0.9743189811706543,
+        "sphere_y": 0.9726854562759399,
+        "bar_angle": 0.986352801322937
+      },
+      "n_params_recovered_ge_0.5": 3,
+      "mean_best_r2": 0.9777857462565104
+    },
+    {
+      "name": "tone|ramp=code",
+      "dials": {
+        "density": 100,
+        "ramp": "code",
+        "tone_amt": 100,
+        "edge_amt": 0,
+        "edge_thresh": 4,
+        "edge_gain": 10,
+        "edge_style": "sobel",
+        "relief": 70,
+        "contrast": 25,
+        "gamma": 100,
+        "posterize": 0
+      },
+      "n_text_features": 30000,
+      "ridge_alpha": 10.0,
+      "ridge_r2": {
+        "sphere_x": 0.9742008447647095,
+        "sphere_y": 0.9736607074737549,
+        "bar_angle_sin2": 0.9909944534301758,
+        "bar_angle_cos2": 0.9847913980484009,
+        "bar_angle": 0.9847913980484009
+      },
+      "mlp_r2": {
+        "sphere_x": 0.6860301494598389,
+        "sphere_y": 0.6719204783439636,
+        "bar_angle_sin2": 0.7805241346359253,
+        "bar_angle_cos2": 0.7653983235359192,
+        "bar_angle": 0.7653983235359192
+      },
+      "best_param_r2": {
+        "sphere_x": 0.9742008447647095,
+        "sphere_y": 0.9736607074737549,
+        "bar_angle": 0.9847913980484009
+      },
+      "n_params_recovered_ge_0.5": 3,
+      "mean_best_r2": 0.9775509834289551
+    },
+    {
+      "name": "mix|density=80",
+      "dials": {
+        "density": 80,
+        "ramp": "classic",
+        "tone_amt": 100,
+        "edge_amt": 60,
+        "edge_thresh": 4,
+        "edge_gain": 10,
+        "edge_style": "sobel",
+        "relief": 70,
+        "contrast": 25,
+        "gamma": 100,
+        "posterize": 0
+      },
+      "n_text_features": 19200,
+      "ridge_alpha": 10.0,
+      "ridge_r2": {
+        "sphere_x": 0.9808465838432312,
+        "sphere_y": 0.96342933177948,
+        "bar_angle_sin2": 0.9871559143066406,
+        "bar_angle_cos2": 0.9890701770782471,
+        "bar_angle": 0.9871559143066406
+      },
+      "mlp_r2": {
+        "sphere_x": 0.7441805005073547,
+        "sphere_y": 0.7767572402954102,
+        "bar_angle_sin2": 0.8398101329803467,
+        "bar_angle_cos2": 0.8214925527572632,
+        "bar_angle": 0.8214925527572632
+      },
+      "best_param_r2": {
+        "sphere_x": 0.9808465838432312,
+        "sphere_y": 0.96342933177948,
+        "bar_angle": 0.9871559143066406
+      },
+      "n_params_recovered_ge_0.5": 3,
+      "mean_best_r2": 0.9771439433097839
+    },
+    {
+      "name": "preset|blueprint",
+      "dials": {
+        "density": 100,
+        "ramp": "minimal",
+        "tone_amt": 25,
+        "edge_amt": 100,
+        "edge_thresh": 3,
+        "edge_gain": 14,
+        "edge_style": "sobel",
+        "relief": 70,
+        "contrast": 25,
+        "gamma": 100,
+        "posterize": 0
+      },
+      "n_text_features": 30000,
+      "ridge_alpha": 10.0,
+      "ridge_r2": {
+        "sphere_x": 0.9783959984779358,
+        "sphere_y": 0.9629597067832947,
+        "bar_angle_sin2": 0.9883106350898743,
+        "bar_angle_cos2": 0.9876950979232788,
+        "bar_angle": 0.9876950979232788
+      },
+      "mlp_r2": {
+        "sphere_x": 0.8220935463905334,
+        "sphere_y": 0.6791784763336182,
+        "bar_angle_sin2": 0.8343095183372498,
+        "bar_angle_cos2": 0.8358544111251831,
+        "bar_angle": 0.8343095183372498
+      },
+      "best_param_r2": {
+        "sphere_x": 0.9783959984779358,
+        "sphere_y": 0.9629597067832947,
+        "bar_angle": 0.9876950979232788
+      },
+      "n_params_recovered_ge_0.5": 3,
+      "mean_best_r2": 0.9763502677281698
+    },
+    {
+      "name": "mix|contrast=60",
+      "dials": {
+        "density": 100,
+        "ramp": "classic",
+        "tone_amt": 100,
+        "edge_amt": 60,
+        "edge_thresh": 4,
+        "edge_gain": 10,
+        "edge_style": "sobel",
+        "relief": 70,
+        "contrast": 60,
+        "gamma": 100,
+        "posterize": 0
+      },
+      "n_text_features": 30000,
+      "ridge_alpha": 10.0,
+      "ridge_r2": {
+        "sphere_x": 0.9719141125679016,
+        "sphere_y": 0.9690068960189819,
+        "bar_angle_sin2": 0.988966166973114,
+        "bar_angle_cos2": 0.9870194792747498,
+        "bar_angle": 0.9870194792747498
+      },
+      "mlp_r2": {
+        "sphere_x": 0.7538828253746033,
+        "sphere_y": 0.643675684928894,
+        "bar_angle_sin2": 0.8453007936477661,
+        "bar_angle_cos2": 0.9056849479675293,
+        "bar_angle": 0.8453007936477661
+      },
+      "best_param_r2": {
+        "sphere_x": 0.9719141125679016,
+        "sphere_y": 0.9690068960189819,
+        "bar_angle": 0.9870194792747498
+      },
+      "n_params_recovered_ge_0.5": 3,
+      "mean_best_r2": 0.9759801626205444
+    },
+    {
+      "name": "preset|wireframe",
+      "dials": {
+        "density": 100,
+        "ramp": "minimal",
+        "tone_amt": 0,
+        "edge_amt": 100,
+        "edge_thresh": 5,
+        "edge_gain": 15,
+        "edge_style": "sobel",
+        "relief": 80,
+        "contrast": 25,
+        "gamma": 100,
+        "posterize": 0
+      },
+      "n_text_features": 30000,
+      "ridge_alpha": 10.0,
+      "ridge_r2": {
+        "sphere_x": 0.9777169227600098,
+        "sphere_y": 0.9628905653953552,
+        "bar_angle_sin2": 0.9848878383636475,
+        "bar_angle_cos2": 0.9855543971061707,
+        "bar_angle": 0.9848878383636475
+      },
+      "mlp_r2": {
+        "sphere_x": 0.7685971260070801,
+        "sphere_y": 0.6984995603561401,
+        "bar_angle_sin2": 0.8317455053329468,
+        "bar_angle_cos2": 0.8682066798210144,
+        "bar_angle": 0.8317455053329468
+      },
+      "best_param_r2": {
+        "sphere_x": 0.9777169227600098,
+        "sphere_y": 0.9628905653953552,
+        "bar_angle": 0.9848878383636475
+      },
+      "n_params_recovered_ge_0.5": 3,
+      "mean_best_r2": 0.9751651088396708
+    },
+    {
+      "name": "mix|density=60",
+      "dials": {
+        "density": 60,
+        "ramp": "classic",
+        "tone_amt": 100,
+        "edge_amt": 60,
+        "edge_thresh": 4,
+        "edge_gain": 10,
+        "edge_style": "sobel",
+        "relief": 70,
+        "contrast": 25,
+        "gamma": 100,
+        "posterize": 0
+      },
+      "n_text_features": 10800,
+      "ridge_alpha": 10.0,
+      "ridge_r2": {
+        "sphere_x": 0.9769028425216675,
+        "sphere_y": 0.9608516693115234,
+        "bar_angle_sin2": 0.9876801371574402,
+        "bar_angle_cos2": 0.9862483739852905,
+        "bar_angle": 0.9862483739852905
+      },
+      "mlp_r2": {
+        "sphere_x": 0.765487015247345,
+        "sphere_y": 0.6977418661117554,
+        "bar_angle_sin2": 0.8491886854171753,
+        "bar_angle_cos2": 0.8101736307144165,
+        "bar_angle": 0.8101736307144165
+      },
+      "best_param_r2": {
+        "sphere_x": 0.9769028425216675,
+        "sphere_y": 0.9608516693115234,
+        "bar_angle": 0.9862483739852905
+      },
+      "n_params_recovered_ge_0.5": 3,
+      "mean_best_r2": 0.9746676286061605
+    },
+    {
+      "name": "edge|thr=2",
+      "dials": {
+        "density": 100,
+        "ramp": "classic",
+        "tone_amt": 0,
+        "edge_amt": 100,
+        "edge_thresh": 2,
+        "edge_gain": 10,
+        "edge_style": "sobel",
+        "relief": 70,
+        "contrast": 25,
+        "gamma": 100,
+        "posterize": 0
+      },
+      "n_text_features": 30000,
+      "ridge_alpha": 10.0,
+      "ridge_r2": {
+        "sphere_x": 0.978903591632843,
+        "sphere_y": 0.9587905406951904,
+        "bar_angle_sin2": 0.9857115149497986,
+        "bar_angle_cos2": 0.9853931665420532,
+        "bar_angle": 0.9853931665420532
+      },
+      "mlp_r2": {
+        "sphere_x": 0.7433001399040222,
+        "sphere_y": 0.5701202154159546,
+        "bar_angle_sin2": 0.869144082069397,
+        "bar_angle_cos2": 0.8466840982437134,
+        "bar_angle": 0.8466840982437134
+      },
+      "best_param_r2": {
+        "sphere_x": 0.978903591632843,
+        "sphere_y": 0.9587905406951904,
+        "bar_angle": 0.9853931665420532
+      },
+      "n_params_recovered_ge_0.5": 3,
+      "mean_best_r2": 0.9743624329566956
+    },
+    {
+      "name": "tone|ramp=blocks",
+      "dials": {
+        "density": 100,
+        "ramp": "blocks",
+        "tone_amt": 100,
+        "edge_amt": 0,
+        "edge_thresh": 4,
+        "edge_gain": 10,
+        "edge_style": "sobel",
+        "relief": 70,
+        "contrast": 25,
+        "gamma": 100,
+        "posterize": 0
+      },
+      "n_text_features": 30000,
+      "ridge_alpha": 10.0,
+      "ridge_r2": {
+        "sphere_x": 0.9671400785446167,
+        "sphere_y": 0.9565713405609131,
+        "bar_angle_sin2": 0.9909884333610535,
+        "bar_angle_cos2": 0.989859938621521,
+        "bar_angle": 0.989859938621521
+      },
+      "mlp_r2": {
+        "sphere_x": 0.8180380463600159,
+        "sphere_y": 0.7270627617835999,
+        "bar_angle_sin2": 0.8271672129631042,
+        "bar_angle_cos2": 0.8103762269020081,
+        "bar_angle": 0.8103762269020081
+      },
+      "best_param_r2": {
+        "sphere_x": 0.9671400785446167,
+        "sphere_y": 0.9565713405609131,
+        "bar_angle": 0.989859938621521
+      },
+      "n_params_recovered_ge_0.5": 3,
+      "mean_best_r2": 0.9711904525756836
+    },
+    {
+      "name": "tone|ramp=minimal",
+      "dials": {
+        "density": 100,
+        "ramp": "minimal",
+        "tone_amt": 100,
+        "edge_amt": 0,
+        "edge_thresh": 4,
+        "edge_gain": 10,
+        "edge_style": "sobel",
+        "relief": 70,
+        "contrast": 25,
+        "gamma": 100,
+        "posterize": 0
+      },
+      "n_text_features": 30000,
+      "ridge_alpha": 10.0,
+      "ridge_r2": {
+        "sphere_x": 0.9671400785446167,
+        "sphere_y": 0.9565713405609131,
+        "bar_angle_sin2": 0.9909884333610535,
+        "bar_angle_cos2": 0.989859938621521,
+        "bar_angle": 0.989859938621521
+      },
+      "mlp_r2": {
+        "sphere_x": 0.8180380463600159,
+        "sphere_y": 0.7270627617835999,
+        "bar_angle_sin2": 0.8271672129631042,
+        "bar_angle_cos2": 0.8103762269020081,
+        "bar_angle": 0.8103762269020081
+      },
+      "best_param_r2": {
+        "sphere_x": 0.9671400785446167,
+        "sphere_y": 0.9565713405609131,
+        "bar_angle": 0.989859938621521
+      },
+      "n_params_recovered_ge_0.5": 3,
+      "mean_best_r2": 0.9711904525756836
+    },
+    {
+      "name": "tone|posterize=3",
+      "dials": {
+        "density": 100,
+        "ramp": "classic",
+        "tone_amt": 100,
+        "edge_amt": 0,
+        "edge_thresh": 4,
+        "edge_gain": 10,
+        "edge_style": "sobel",
+        "relief": 70,
+        "contrast": 25,
+        "gamma": 100,
+        "posterize": 3
+      },
+      "n_text_features": 30000,
+      "ridge_alpha": 10.0,
+      "ridge_r2": {
+        "sphere_x": 0.9624669551849365,
+        "sphere_y": 0.95086270570755,
+        "bar_angle_sin2": 0.9835741519927979,
+        "bar_angle_cos2": 0.9824966192245483,
+        "bar_angle": 0.9824966192245483
+      },
+      "mlp_r2": {
+        "sphere_x": 0.7702827453613281,
+        "sphere_y": 0.6841645836830139,
+        "bar_angle_sin2": 0.7763733863830566,
+        "bar_angle_cos2": 0.7993694543838501,
+        "bar_angle": 0.7763733863830566
+      },
+      "best_param_r2": {
+        "sphere_x": 0.9624669551849365,
+        "sphere_y": 0.95086270570755,
+        "bar_angle": 0.9824966192245483
+      },
+      "n_params_recovered_ge_0.5": 3,
+      "mean_best_r2": 0.9652754267056783
+    },
+    {
+      "name": "mix|density=40",
+      "dials": {
+        "density": 40,
+        "ramp": "classic",
+        "tone_amt": 100,
+        "edge_amt": 60,
+        "edge_thresh": 4,
+        "edge_gain": 10,
+        "edge_style": "sobel",
+        "relief": 70,
+        "contrast": 25,
+        "gamma": 100,
+        "posterize": 0
+      },
+      "n_text_features": 4800,
+      "ridge_alpha": 10.0,
+      "ridge_r2": {
+        "sphere_x": 0.9637803435325623,
+        "sphere_y": 0.9445576071739197,
+        "bar_angle_sin2": 0.9856700897216797,
+        "bar_angle_cos2": 0.9886241555213928,
+        "bar_angle": 0.9856700897216797
+      },
+      "mlp_r2": {
+        "sphere_x": 0.7798402309417725,
+        "sphere_y": 0.7590013146400452,
+        "bar_angle_sin2": 0.8273823261260986,
+        "bar_angle_cos2": 0.8464721441268921,
+        "bar_angle": 0.8273823261260986
+      },
+      "best_param_r2": {
+        "sphere_x": 0.9637803435325623,
+        "sphere_y": 0.9445576071739197,
+        "bar_angle": 0.9856700897216797
+      },
+      "n_params_recovered_ge_0.5": 3,
+      "mean_best_r2": 0.9646693468093872
+    },
+    {
+      "name": "edge|style=laplace",
+      "dials": {
+        "density": 100,
+        "ramp": "classic",
+        "tone_amt": 0,
+        "edge_amt": 100,
+        "edge_thresh": 4,
+        "edge_gain": 10,
+        "edge_style": "laplace",
+        "relief": 70,
+        "contrast": 25,
+        "gamma": 100,
+        "posterize": 0
+      },
+      "n_text_features": 30000,
+      "ridge_alpha": 10.0,
+      "ridge_r2": {
+        "sphere_x": 0.9479666948318481,
+        "sphere_y": 0.9049461483955383,
+        "bar_angle_sin2": 0.9669155478477478,
+        "bar_angle_cos2": 0.9551823735237122,
+        "bar_angle": 0.9551823735237122
+      },
+      "mlp_r2": {
+        "sphere_x": 0.7579889893531799,
+        "sphere_y": 0.6187428832054138,
+        "bar_angle_sin2": 0.8396186828613281,
+        "bar_angle_cos2": 0.7532787919044495,
+        "bar_angle": 0.7532787919044495
+      },
+      "best_param_r2": {
+        "sphere_x": 0.9479666948318481,
+        "sphere_y": 0.9049461483955383,
+        "bar_angle": 0.9551823735237122
+      },
+      "n_params_recovered_ge_0.5": 3,
+      "mean_best_r2": 0.9360317389170328
+    }
+  ],
+  "runtime_s": 116.7
+}
