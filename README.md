@@ -28,6 +28,13 @@ measured by training the same ridge on permuted labels.
 - `sweep.py` — the sweep. `python3 sweep.py` → one JSON verdict on stdout,
   progress on stderr. `C1_SMOKE=1` for a 15-second version.
 - `results/c1-sweep.json` — the full verdict of the run below.
+- `c2_feed.py` / `c2_clip.py` / `c2_sweep.py` / `c2_run.sh` — experiment c2
+  (VLM as ground truth). `./c2_run.sh` → one JSON verdict on stdout. Feed
+  frames land in `c2_frames/` (gitignored). Needs system python3 (cv2/sklearn)
+  for feed+sweep and `~/venvs/elephant-gpu` (torch+transformers) for CLIP;
+  `C2_SMOKE=1` for the smoke version of every stage.
+- `results/c2-sweep.json` — the full verdict of the c2 run below.
+- `c2_sources_contact_sheet.png` — the five lavfi sources at t=0/4.9s/9.9s.
 
 ## Result (2026-09-28): **KEEP**
 
@@ -55,5 +62,52 @@ families/levels; DIRS glyph table; dial chain order). Do not modify
 `SuperInstance/chiaroscuro` — this repo is the re-implementation home.
 
 ## Next
-- c2: same sweep, labels from a VLM on real footage.
+- c2: same sweep, labels from a VLM on real footage. → done, below.
 - c3: framerate vs pixel loss — where does text-carried info stop matching pixels?
+
+---
+
+# c2 — VLM as ground truth (the GAN-ish loop)
+
+**Question:** a real vision model interprets each frame; can a text-only reader
+recover that interpretation from chiaroscuro's rendered TEXT of the same frame?
+The discriminator is a real interpreter; the generator sweeps.
+
+**Method:** five ffmpeg lavfi feeds (`testsrc2`, `smptebars`, `mandelbrot`,
+`life`, `gradients`; 10 s × 10 fps × 320×240 = 500 frames) → CLIP ViT-B/32
+zero-shot (cached `openai/clip-vit-base-patch32`, fp16 GPU) scores every frame
+against 12 captions (5 source + 7 distractors); label = argmax caption; frames
+with top-1/top-2 softmax margin < 0.10 dropped (4/500; margin median 0.86).
+The same frames go through the c1 renderer at the same 34 settings, and two
+text-only readers (dual ridge on native glyph features, PCA-100→MLP) predict
+the caption index. **Splits are temporal per source (70/15/15, no shuffle)** —
+adjacent frames are near-duplicates, so random splits would leak the future.
+Pixels control = the SAME ridge-one-hot reader on CLIP image embeddings.
+
+## Result (2026-09-28): **KEEP**
+
+- Test majority-class prior = 0.400; pixels control = 1.000.
+- **34/34 settings beat the prior by ≥15 points.** 30/34 hit 100% test
+  accuracy (+60 pts over prior, 100% of the pixels control). Below the ceiling:
+  `tone|posterize=3` (0.80), `edge|style=emboss` / `mix|contrast=10` (0.89),
+  `edge|style=laplace` (0.93). Ridge alone ≥ 0.80 everywhere, exactly 1.000 at
+  30/34 settings.
+
+**Honest reading:** even flatter than c1 — because the classes are visually
+EXTREME (fractal vs cellular automaton vs gradient vs color bars) and every
+one has a distinct global luminance/texture signature. The bottleneck is again
+nowhere near binding. Two findings that do matter:
+1. **The discriminator's interpretation ≠ the generator's intent.** CLIP
+   (single-frame) merges testsrc2 into the smptebars caption 96/100 — a still
+   frame of a test pattern cannot reveal motion — and reads 3 `life` frames as
+   "a night sky full of stars". Labels were kept as CLIP saw them.
+2. Text-only readers match the CLIP-embedding control at every setting here:
+   whatever CLIP's own features carry about its label, the glyph text carries too.
+
+**Infra notes (future-us):** transformers 5.x `get_*_features` returns
+`BaseModelOutputWithPooling` — the projected embeddings are in
+`.pooler_output`; and the HF cache for `openai/clip-vit-base-patch32` was
+missing tokenizer files, which made the offline tokenizer emit garbage ids
+(silent! everything decoded to the same caption) — fixed by letting the hub
+download `tokenizer.json` et al. Check tokenizer output before trusting
+zero-shot labels.

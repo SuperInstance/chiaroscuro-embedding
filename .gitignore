@@ -1,2 +1,6 @@
 __pycache__/
 *.pyc
+__pycache__/
+*.pyc
+c2_frames/
+*.npy
