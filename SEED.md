@@ -32,3 +32,26 @@ A text-only agent (local Liquid/Granite) whose *eyes* are the chiaroscuro text. 
 - **Do NOT modify SuperInstance/chiaroscuro.** Read it; re-implement the pipeline here.
 - Seeds, not constraints. Kill what dies; keep the gold (archive-by-rename).
 - **Train novel models**, not just frozen probes. Long season, always running.
+
+---
+
+## Wave 2 seeds (Casey, 2026-09-28 11:06)
+
+### Video = free supervision
+Any feed of people or animations can be ML'd directly — **the video is the supervision rendering that way.** No labels needed; the content provides them (via VLM or known scene structure). The renderer sweeps over the SAME frames and we measure what survives into text.
+
+### Oscillation & fabulation
+The chiaroscuro dials don't have to be static — they can **oscillate, fabulate, and change stochastically** during rendering. Randomness source: **MOTHquantum API (true random)** once keyed; numpy RNG as fallback until then. A render becomes a trajectory through dial-space, not a point.
+
+### MicroMoth-quilt, lower level
+[MicroMoth-quilt](https://github.com/SuperInstance/MicroMoth-quilt) is the smallest quantum framework (pure Python, read-in-an-afternoon) wearing the quilt receipt-ledger lane: every gate a BIND cell, every measurement a sealed collapse, fnv1a-64 chained, replayable. Seed: design it **even lower level to distribute better over more cells**.
+
+### cudaclaw-Moth
+A **GPU-native, fully-accelerated MicroMoth** — what cudaclaw is to the cell kernel, done for the quantum micro-framework. For scale.
+
+### Meta
+**Keep building and using your tools to make and sharpen other tools.** Iron sharpens iron.
+
+## Pending / blocked
+- `key.txt` (MOTHquantum.com + Typesafe.ai links): **not found** — searched ~, ~/projects, workspace. Need its location from Casey.
+- mothquantum.com is JS-rendered; API docs need a browser pass once the key lands.
