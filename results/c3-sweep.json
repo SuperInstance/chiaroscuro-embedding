@@ -1,0 +1,517 @@
+{
+  "experiment": "c3-framerate-vs-pixels",
+  "repo": "chiaroscuro-embedding",
+  "question": "at a fixed character budget (chars/sec), is information better carried by MORE frames at LOWER glyph resolution, or FEWER frames at HIGHER glyph resolution? (SEED: 'chiaroscuro can crank framerate to make up for pixel loss')",
+  "feed": {
+    "sources": [
+      "testsrc2",
+      "smptebars",
+      "mandelbrot",
+      "life",
+      "gradients"
+    ],
+    "master_fps": 20,
+    "seconds_per_source": 10,
+    "n_master_frames": 1000,
+    "resolution": "320x240",
+    "cell_strides": {
+      "2.5": 8,
+      "5.0": 4,
+      "10.0": 2,
+      "20.0": 1
+    }
+  },
+  "ground_truth": {
+    "model": "openai/clip-vit-base-patch32",
+    "rule": "CLIP zero-shot argmax caption per MASTER frame (20 fps); every cell samples labels from this one labeling",
+    "captions_n": 12,
+    "margin": {
+      "percentiles": {
+        "0": 0.0011120438575744629,
+        "5": 0.38541460037231445,
+        "25": 0.7201725244522095,
+        "50": 0.9492081999778748,
+        "75": 0.9743479490280151,
+        "95": 0.9840531349182129,
+        "100": 0.9909555912017822
+      },
+      "mean": 0.8268369436264038
+    },
+    "argmax_caption_counts": {
+      "a video test pattern with moving bars and grids": 4,
+      "a television color calibration test pattern with solid colored bars": 396,
+      "a colorful fractal zooming in": 200,
+      "a black and white cellular automaton simulation of cells evolving": 199,
+      "a smooth colorful gradient slowly shifting and blending": 200,
+      "a night sky full of stars": 1
+    },
+    "per_source_agreement_with_intended": {
+      "testsrc2": 0.02,
+      "smptebars": 1.0,
+      "mandelbrot": 1.0,
+      "life": 0.995,
+      "gradients": 1.0
+    },
+    "margin_filter": "NONE (pre-registered): label noise identical across cells; comparison is paired"
+  },
+  "protocol": {
+    "render_dials": {
+      "ramp": "classic",
+      "tone_amt": 100,
+      "edge_amt": 60,
+      "edge_thresh": 4,
+      "edge_gain": 10,
+      "relief": 70,
+      "contrast": 25,
+      "gamma": 100
+    },
+    "text_features": "8x6 block-pooled histograms over glyph vocabulary (V=23); dim = 1104 for EVERY cell (reader capacity constant)",
+    "variants": {
+      "single": "current frame's text only",
+      "stacked": "last k=4 frames' text concatenated (low-fps cells get a longer temporal reach per stack; budget = 4x single)"
+    },
+    "readers": "c2's exact readers, reused by import: dual ridge one-hot (alpha in {10,100,1000} on val) + PCA->MLP(64)",
+    "cv": "blocked 5-fold: contiguous temporal blocks per source; every sampled frame is a test target exactly once; val = last 15% of train per source",
+    "budget_rule": "chars/sec = fps * cols * rows (fixed-width text frame, blanks count)"
+  },
+  "gates": {
+    "rule": "FRAMERATE-WINS iff >= 2/4 matched pairs have acc(high-fps) - acc(low-fps) >= +5 pts and more pairs favor high-fps; RESOLUTION-WINS the reverse; else TIE. Headline = stacked variant.",
+    "matched_pairs": [
+      {
+        "budget_chars_per_sec": 12000,
+        "high": {
+          "fps": 2.5,
+          "density": 80
+        },
+        "low": {
+          "fps": 10.0,
+          "density": 40
+        }
+      },
+      {
+        "budget_chars_per_sec": 24000,
+        "high": {
+          "fps": 5.0,
+          "density": 80
+        },
+        "low": {
+          "fps": 20.0,
+          "density": 40
+        }
+      },
+      {
+        "budget_chars_per_sec": 48000,
+        "high": {
+          "fps": 2.5,
+          "density": 160
+        },
+        "low": {
+          "fps": 10.0,
+          "density": 80
+        }
+      },
+      {
+        "budget_chars_per_sec": 96000,
+        "high": {
+          "fps": 5.0,
+          "density": 160
+        },
+        "low": {
+          "fps": 20.0,
+          "density": 80
+        }
+      }
+    ],
+    "single": {
+      "pairs": [
+        {
+          "budget_chars_per_sec": 12000,
+          "high_fps_cell": {
+            "fps": 2.5,
+            "density": 80,
+            "acc": 0.928
+          },
+          "low_fps_cell": {
+            "fps": 10.0,
+            "density": 40,
+            "acc": 0.97
+          },
+          "delta_acc_pts_high_minus_low": -4.2,
+          "favors": "even"
+        },
+        {
+          "budget_chars_per_sec": 24000,
+          "high_fps_cell": {
+            "fps": 5.0,
+            "density": 80,
+            "acc": 0.952
+          },
+          "low_fps_cell": {
+            "fps": 20.0,
+            "density": 40,
+            "acc": 0.956
+          },
+          "delta_acc_pts_high_minus_low": -0.4,
+          "favors": "even"
+        },
+        {
+          "budget_chars_per_sec": 48000,
+          "high_fps_cell": {
+            "fps": 2.5,
+            "density": 160,
+            "acc": 0.904
+          },
+          "low_fps_cell": {
+            "fps": 10.0,
+            "density": 80,
+            "acc": 0.944
+          },
+          "delta_acc_pts_high_minus_low": -4.0,
+          "favors": "even"
+        },
+        {
+          "budget_chars_per_sec": 96000,
+          "high_fps_cell": {
+            "fps": 5.0,
+            "density": 160,
+            "acc": 0.932
+          },
+          "low_fps_cell": {
+            "fps": 20.0,
+            "density": 80,
+            "acc": 0.922
+          },
+          "delta_acc_pts_high_minus_low": 1.0,
+          "favors": "even"
+        }
+      ],
+      "pairs_favoring_high_fps": 0,
+      "pairs_favoring_low_fps": 0,
+      "verdict": "TIE"
+    },
+    "stacked": {
+      "pairs": [
+        {
+          "budget_chars_per_sec": 12000,
+          "high_fps_cell": {
+            "fps": 2.5,
+            "density": 80,
+            "acc": 0.936
+          },
+          "low_fps_cell": {
+            "fps": 10.0,
+            "density": 40,
+            "acc": 0.986
+          },
+          "delta_acc_pts_high_minus_low": -5.0,
+          "favors": "low-fps"
+        },
+        {
+          "budget_chars_per_sec": 24000,
+          "high_fps_cell": {
+            "fps": 5.0,
+            "density": 80,
+            "acc": 0.944
+          },
+          "low_fps_cell": {
+            "fps": 20.0,
+            "density": 40,
+            "acc": 0.992
+          },
+          "delta_acc_pts_high_minus_low": -4.8,
+          "favors": "even"
+        },
+        {
+          "budget_chars_per_sec": 48000,
+          "high_fps_cell": {
+            "fps": 2.5,
+            "density": 160,
+            "acc": 0.936
+          },
+          "low_fps_cell": {
+            "fps": 10.0,
+            "density": 80,
+            "acc": 0.95
+          },
+          "delta_acc_pts_high_minus_low": -1.4,
+          "favors": "even"
+        },
+        {
+          "budget_chars_per_sec": 96000,
+          "high_fps_cell": {
+            "fps": 5.0,
+            "density": 160,
+            "acc": 0.94
+          },
+          "low_fps_cell": {
+            "fps": 20.0,
+            "density": 80,
+            "acc": 0.954
+          },
+          "delta_acc_pts_high_minus_low": -1.4,
+          "favors": "even"
+        }
+      ],
+      "pairs_favoring_high_fps": 0,
+      "pairs_favoring_low_fps": 1,
+      "verdict": "TIE"
+    }
+  },
+  "verdict": "TIE",
+  "verdict_detail": "stacked gate: TIE (0 pairs favor high-fps, 1 favor low-fps, need >= 2 at >= 5 pts); single-frame ablation: TIE (0/0)",
+  "cells": [
+    {
+      "fps": 2.5,
+      "density": 40,
+      "chars_per_frame": 1200,
+      "chars_per_sec": 3000,
+      "n_samples": 125,
+      "prior_majority": 0.384,
+      "single": {
+        "ridge_test_acc": 0.96,
+        "mlp_test_acc": 0.376,
+        "best_reader": "ridge",
+        "best_test_acc": 0.96
+      },
+      "stacked": {
+        "ridge_test_acc": 0.96,
+        "mlp_test_acc": 0.432,
+        "best_reader": "ridge",
+        "best_test_acc": 0.96,
+        "chars_per_sec": 12000
+      }
+    },
+    {
+      "fps": 5.0,
+      "density": 40,
+      "chars_per_frame": 1200,
+      "chars_per_sec": 6000,
+      "n_samples": 250,
+      "prior_majority": 0.388,
+      "single": {
+        "ridge_test_acc": 0.96,
+        "mlp_test_acc": 0.824,
+        "best_reader": "ridge",
+        "best_test_acc": 0.96
+      },
+      "stacked": {
+        "ridge_test_acc": 0.98,
+        "mlp_test_acc": 0.912,
+        "best_reader": "ridge",
+        "best_test_acc": 0.98,
+        "chars_per_sec": 24000
+      }
+    },
+    {
+      "fps": 2.5,
+      "density": 80,
+      "chars_per_frame": 4800,
+      "chars_per_sec": 12000,
+      "n_samples": 125,
+      "prior_majority": 0.384,
+      "single": {
+        "ridge_test_acc": 0.928,
+        "mlp_test_acc": 0.416,
+        "best_reader": "ridge",
+        "best_test_acc": 0.928
+      },
+      "stacked": {
+        "ridge_test_acc": 0.936,
+        "mlp_test_acc": 0.448,
+        "best_reader": "ridge",
+        "best_test_acc": 0.936,
+        "chars_per_sec": 48000
+      }
+    },
+    {
+      "fps": 10.0,
+      "density": 40,
+      "chars_per_frame": 1200,
+      "chars_per_sec": 12000,
+      "n_samples": 500,
+      "prior_majority": 0.392,
+      "single": {
+        "ridge_test_acc": 0.97,
+        "mlp_test_acc": 0.848,
+        "best_reader": "ridge",
+        "best_test_acc": 0.97
+      },
+      "stacked": {
+        "ridge_test_acc": 0.986,
+        "mlp_test_acc": 0.896,
+        "best_reader": "ridge",
+        "best_test_acc": 0.986,
+        "chars_per_sec": 48000
+      }
+    },
+    {
+      "fps": 5.0,
+      "density": 80,
+      "chars_per_frame": 4800,
+      "chars_per_sec": 24000,
+      "n_samples": 250,
+      "prior_majority": 0.388,
+      "single": {
+        "ridge_test_acc": 0.952,
+        "mlp_test_acc": 0.8,
+        "best_reader": "ridge",
+        "best_test_acc": 0.952
+      },
+      "stacked": {
+        "ridge_test_acc": 0.944,
+        "mlp_test_acc": 0.896,
+        "best_reader": "ridge",
+        "best_test_acc": 0.944,
+        "chars_per_sec": 96000
+      }
+    },
+    {
+      "fps": 20.0,
+      "density": 40,
+      "chars_per_frame": 1200,
+      "chars_per_sec": 24000,
+      "n_samples": 1000,
+      "prior_majority": 0.396,
+      "single": {
+        "ridge_test_acc": 0.956,
+        "mlp_test_acc": 0.887,
+        "best_reader": "ridge",
+        "best_test_acc": 0.956
+      },
+      "stacked": {
+        "ridge_test_acc": 0.992,
+        "mlp_test_acc": 0.892,
+        "best_reader": "ridge",
+        "best_test_acc": 0.992,
+        "chars_per_sec": 96000
+      }
+    },
+    {
+      "fps": 2.5,
+      "density": 160,
+      "chars_per_frame": 19200,
+      "chars_per_sec": 48000,
+      "n_samples": 125,
+      "prior_majority": 0.384,
+      "single": {
+        "ridge_test_acc": 0.904,
+        "mlp_test_acc": 0.392,
+        "best_reader": "ridge",
+        "best_test_acc": 0.904
+      },
+      "stacked": {
+        "ridge_test_acc": 0.936,
+        "mlp_test_acc": 0.44,
+        "best_reader": "ridge",
+        "best_test_acc": 0.936,
+        "chars_per_sec": 192000
+      }
+    },
+    {
+      "fps": 10.0,
+      "density": 80,
+      "chars_per_frame": 4800,
+      "chars_per_sec": 48000,
+      "n_samples": 500,
+      "prior_majority": 0.392,
+      "single": {
+        "ridge_test_acc": 0.944,
+        "mlp_test_acc": 0.862,
+        "best_reader": "ridge",
+        "best_test_acc": 0.944
+      },
+      "stacked": {
+        "ridge_test_acc": 0.95,
+        "mlp_test_acc": 0.882,
+        "best_reader": "ridge",
+        "best_test_acc": 0.95,
+        "chars_per_sec": 192000
+      }
+    },
+    {
+      "fps": 5.0,
+      "density": 160,
+      "chars_per_frame": 19200,
+      "chars_per_sec": 96000,
+      "n_samples": 250,
+      "prior_majority": 0.388,
+      "single": {
+        "ridge_test_acc": 0.932,
+        "mlp_test_acc": 0.896,
+        "best_reader": "ridge",
+        "best_test_acc": 0.932
+      },
+      "stacked": {
+        "ridge_test_acc": 0.94,
+        "mlp_test_acc": 0.792,
+        "best_reader": "ridge",
+        "best_test_acc": 0.94,
+        "chars_per_sec": 384000
+      }
+    },
+    {
+      "fps": 20.0,
+      "density": 80,
+      "chars_per_frame": 4800,
+      "chars_per_sec": 96000,
+      "n_samples": 1000,
+      "prior_majority": 0.396,
+      "single": {
+        "ridge_test_acc": 0.922,
+        "mlp_test_acc": 0.878,
+        "best_reader": "ridge",
+        "best_test_acc": 0.922
+      },
+      "stacked": {
+        "ridge_test_acc": 0.954,
+        "mlp_test_acc": 0.896,
+        "best_reader": "ridge",
+        "best_test_acc": 0.954,
+        "chars_per_sec": 384000
+      }
+    },
+    {
+      "fps": 10.0,
+      "density": 160,
+      "chars_per_frame": 19200,
+      "chars_per_sec": 192000,
+      "n_samples": 500,
+      "prior_majority": 0.392,
+      "single": {
+        "ridge_test_acc": 0.918,
+        "mlp_test_acc": 0.826,
+        "best_reader": "ridge",
+        "best_test_acc": 0.918
+      },
+      "stacked": {
+        "ridge_test_acc": 0.926,
+        "mlp_test_acc": 0.834,
+        "best_reader": "ridge",
+        "best_test_acc": 0.926,
+        "chars_per_sec": 768000
+      }
+    },
+    {
+      "fps": 20.0,
+      "density": 160,
+      "chars_per_frame": 19200,
+      "chars_per_sec": 384000,
+      "n_samples": 1000,
+      "prior_majority": 0.396,
+      "single": {
+        "ridge_test_acc": 0.914,
+        "mlp_test_acc": 0.814,
+        "best_reader": "ridge",
+        "best_test_acc": 0.914
+      },
+      "stacked": {
+        "ridge_test_acc": 0.93,
+        "mlp_test_acc": 0.803,
+        "best_reader": "ridge",
+        "best_test_acc": 0.93,
+        "chars_per_sec": 1536000
+      }
+    }
+  ],
+  "runtime_s": 260.7
+}

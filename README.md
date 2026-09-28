@@ -111,3 +111,80 @@ missing tokenizer files, which made the offline tokenizer emit garbage ids
 (silent! everything decoded to the same caption) — fixed by letting the hub
 download `tokenizer.json` et al. Check tokenizer output before trusting
 zero-shot labels.
+
+---
+
+# c3 — framerate vs pixel loss at a fixed character budget
+
+**Question (the seed claim, quantified):** *"chiaroscuro can crank framerate to
+make up for pixel loss."* At a fixed TOKEN BUDGET (chars/sec), is information
+better carried by **MORE frames at LOWER resolution** or **FEWER frames at
+HIGHER resolution**?
+
+**Method:** one 20 fps master timeline (c2's five lavfi sources, 10 s each,
+1000 frames, 320x240) labeled by CLIP at the master rate. Twelve cells:
+framerate {2.5, 5, 10, 20} x density {40, 80, 160} cols — each cell samples the
+master at its stride and renders through the glyph pipeline at c2's default mix
+dials. Budget = fps x cols x rows (fixed-width text frame, blanks count). The
+grid contains **four exact matched-budget pairs** where the high-fps cell has
+4x the framerate and 1/4 the glyph area: 12k c/s (2.5/80 vs 10/40), 24k c/s
+(5/80 vs 20/40), 48k c/s (2.5/160 vs 10/80), 96k c/s (5/160 vs 20/80). The
+reader is IDENTICAL for every cell — 8x6 block-pooled histograms over the 23-
+glyph vocabulary (dim 1104, constant) — so capacity never confounds the
+comparison; c2's exact readers, blocked 5-fold temporal CV. Stacked variant
+concatenates the last k=4 frames' text (low-fps cells get a longer temporal
+reach per stack — their fair shot; budget 4x, pairs stay matched). **No margin
+filter** (paired comparison, identical label noise). Gates (pre-registered):
+FRAMERATE-WINS iff >= 2/4 matched pairs favor the high-fps cell by >= 5 acc
+points (and more pairs favor it); RESOLUTION-WINS the reverse; else TIE.
+Headline = stacked variant.
+
+## Result (2026-09-28): **TIE**
+
+| fps | cols | chars/frame | chars/sec | n | single | stacked |
+|----:|-----:|------------:|----------:|---:|-------:|--------:|
+| 2.5 | 40 | 1,200 | 3,000 | 125 | 0.960 | 0.960 |
+| 5.0 | 40 | 1,200 | 6,000 | 250 | 0.960 | 0.980 |
+| 2.5 | 80 | 4,800 | 12,000 | 125 | 0.928 | 0.936 |
+| 10.0 | 40 | 1,200 | 12,000 | 500 | 0.970 | 0.986 |
+| 5.0 | 80 | 4,800 | 24,000 | 250 | 0.952 | 0.944 |
+| 20.0 | 40 | 1,200 | 24,000 | 1000 | 0.956 | **0.992** |
+| 2.5 | 160 | 19,200 | 48,000 | 125 | 0.904 | 0.936 |
+| 10.0 | 80 | 4,800 | 48,000 | 500 | 0.944 | 0.950 |
+| 5.0 | 160 | 19,200 | 96,000 | 250 | 0.932 | 0.940 |
+| 20.0 | 80 | 4,800 | 96,000 | 1000 | 0.922 | 0.954 |
+| 10.0 | 160 | 19,200 | 192,000 | 500 | 0.918 | 0.926 |
+| 20.0 | 160 | 19,200 | 384,000 | 1000 | 0.914 | 0.930 |
+
+Matched-pair deltas (stacked, high-fps minus low-fps, acc pts): **−5.0,
+−4.8, −1.4, −1.4** → 0 pairs favor high-fps, 1 favor low-fps → TIE (single-
+frame ablation: −4.2, −0.4, −4.0, +1.0 → TIE).
+
+**Honest reading of the frontier:** neither frontier dominates — the curve is
+essentially FLAT from 3,000 to 384,000 chars/sec (all cells 0.90–0.99 vs a
+0.38–0.40 majority prior; constant-class sources again). The seed claim is not
+confirmed at these budgets — but neither is it refuted, because the bottleneck
+is STILL not binding (third experiment in a row with saturation): even 2.5 fps
+at 1,200 chars/frame holds 96%. If anything, the one pair to clear the gate
+favored low-fps/high-density (2.5/80 vs 10/40, stacked: −5.0) while the best
+cell overall is the high-fps budget cell (20 fps/40 cols, 0.992 stacked) — the
+frontiers interleave within noise of each other. Framerate does NOT need
+cranking to make up for pixel loss on this task; framerate and glyph resolution
+are near-interchangeable at matched char budgets. The claim can only be tested
+where the budget actually binds: harder content (motion-differentiated classes —
+note CLIP itself merged the two test-pattern sources 98/100 at 20 fps, same as
+c2 at 10 fps), harsher budgets (sub-1,000 chars/sec), or confusable classes.
+That is a c3b (or c4-adjacent) question.
+
+## Files
+- `c3_feed.py` — 20 fps master timeline (rebuilds c2's lavfi graphs at
+  `rate=20`, mandelbrot `end_pts` rescaled; reuses `c2_feed.read_source`).
+  `C3_SMOKE=1` for the 2 s version.
+- `c3_clip.py` — CLIP zero-shot labels on every master frame (c2's caption set
+  verbatim; runs in `~/venvs/elephant-gpu`, fp16 GPU, serialized; the ONLY GPU
+  step). Writes `c3_frames/clip_labels.npz` + summary.
+- `c3_sweep.py` — the 12-cell sweep, matched-budget gate, ONE JSON verdict on
+  stdout. `C3_SMOKE=1` for the smoke version.
+- `c3_run.sh` — driver: feed → CLIP → sweep. `./c3_run.sh > results/c3-sweep.json`.
+- `results/c3-sweep.json` — the full verdict of the run above.
+- `c3_frames/` — gitignored (230 MB npy + labels).

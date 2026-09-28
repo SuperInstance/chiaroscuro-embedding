@@ -3,4 +3,5 @@ __pycache__/
 __pycache__/
 *.pyc
 c2_frames/
+c3_frames/
 *.npy
