@@ -55,3 +55,14 @@ A **GPU-native, fully-accelerated MicroMoth** — what cudaclaw is to the cell k
 ## Pending / blocked
 - `key.txt` (MOTHquantum.com + Typesafe.ai links): **not found** — searched ~, ~/projects, workspace. Need its location from Casey.
 - mothquantum.com is JS-rendered; API docs need a browser pass once the key lands.
+
+---
+
+## Wave 3 seed (Casey, 2026-09-28 16:47) — the CV for PLATO: spatial acoustics as room-shape
+
+- **Spatial-acoustic is its own long-running lane, later.** When it opens:
+  - sonar-vision's rendering couples to audio → **ASCII spatial images of sound**.
+  - The deeper half: **ray-tracing / path-tracing equations EMBED THE SHAPE OF THE ROOM** — the acoustic ray paths and resonances are a multimodal expression of room geometry. Read the field, read the room.
+  - **Scaling law: more transmitters + receivers → resolution of spatial understanding scales easily** in ASCII-first perception (the lattice composes with the array).
+  - This is **PLATO's CV**: the creature whose senses include seeing rooms through sound.
+- t1 (thermal) proceeds now — quick-encoding heat fields for reflexes (creature motion).
