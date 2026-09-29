@@ -76,3 +76,10 @@ A **GPU-native, fully-accelerated MicroMoth** — what cudaclaw is to the cell k
 - **When the camera isn't steady, high framerate helps abstract 4D** (3D world + time). The unsteady camera is a FEATURE: its ego-motion parallax reveals depth — near objects swing fast in frame, far ones drift slow; the parallax gradient IS the depth map.
 - The 4D abstraction from the glyph stream: separate ego-motion from object-motion in the delta stream → recover depth ordering. High framerate makes the correspondence tractable (tiny inter-frame deltas).
 - t3: a 3D thermal scene (heat sources at multiple depths) + a camera with known ego-motion (drift/shake), rendered at high fps. Gate: depth ordering recovered from the glyph delta stream >> chance. Same principle as the ray-traced room shape: geometry lives in the dynamics.
+
+## Wave 4 seed (Casey, 2026-09-28 16:52) — the simulation-first paradigm: confirm until surprised, then earn the moment
+
+- **4D in a time-first, SIMULATION-FIRST paradigm** (the tminus / t-minus repos): the creature runs a forward simulation of its world; **framerate becomes a waveform** — each frame a confirmation of the prior calculated simulation, **until surprised**.
+- **The arc of surprise**: primitive creatures minimize surprise; the highest form SEEKS it — **jam sessions and sports games, trying for EARNED moments** (deliberate high-surprise states with skin in the game). We are reaching that.
+- Today's program already embodies it without having named it: G5's composite = the confirm-until-surprised loop (persistence IS the prior simulation; the diff-head IS the surprise handler). G4's diff-mask = learning only from surprise. t3's unsteady camera = deliberate surprise injection to reveal geometry (the saccade doctrine). The falsifier campaign = surprise-seeking as method. The Tap's agents jamming = the social form.
+- t4+ design implication: the predictor and the simulator merge — the glyph model's job is not prediction but CONFIRMATION (cheap, most frames) + surprise detection (the changed cells) + re-simulation on surprise. Framerate is the sampling rate of the confirmation waveform.
