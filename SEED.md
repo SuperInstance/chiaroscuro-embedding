@@ -66,3 +66,8 @@ A **GPU-native, fully-accelerated MicroMoth** — what cudaclaw is to the cell k
   - **Scaling law: more transmitters + receivers → resolution of spatial understanding scales easily** in ASCII-first perception (the lattice composes with the array).
   - This is **PLATO's CV**: the creature whose senses include seeing rooms through sound.
 - t1 (thermal) proceeds now — quick-encoding heat fields for reflexes (creature motion).
+
+### t2 seed (Casey, 2026-09-28 16:47) — motion signatures for cross-camera identification
+- **Thermal at high glyph framerate gives objects a MOTION SIGNATURE** — and motion signatures enable **relative identification ACROSS CAMERAS** (and are far more general-purpose than that, of course).
+- The hypothesis that inverts X2: the STATIC visible-light read was renderer-bound (didn't transfer), but the MOTION signature (the glyph-delta stream — G4's changed-cells as the carrier) may transfer across sensors because it's about the OBJECT, not the sensor's parameterization.
+- t2 (fires when t1's artifacts exist): same moving heat sources rendered from TWO cameras (different position/scale/pipeline) → extract motion signatures (delta streams) → test cross-camera object matching. Gate: matching >> chance. KILL: signatures are camera-bound like statics were.
