@@ -71,3 +71,8 @@ A **GPU-native, fully-accelerated MicroMoth** — what cudaclaw is to the cell k
 - **Thermal at high glyph framerate gives objects a MOTION SIGNATURE** — and motion signatures enable **relative identification ACROSS CAMERAS** (and are far more general-purpose than that, of course).
 - The hypothesis that inverts X2: the STATIC visible-light read was renderer-bound (didn't transfer), but the MOTION signature (the glyph-delta stream — G4's changed-cells as the carrier) may transfer across sensors because it's about the OBJECT, not the sensor's parameterization.
 - t2 (fires when t1's artifacts exist): same moving heat sources rendered from TWO cameras (different position/scale/pipeline) → extract motion signatures (delta streams) → test cross-camera object matching. Gate: matching >> chance. KILL: signatures are camera-bound like statics were.
+
+### t3 seed (Casey, 2026-09-28 16:49) — the unsteady camera abstracts 4D
+- **When the camera isn't steady, high framerate helps abstract 4D** (3D world + time). The unsteady camera is a FEATURE: its ego-motion parallax reveals depth — near objects swing fast in frame, far ones drift slow; the parallax gradient IS the depth map.
+- The 4D abstraction from the glyph stream: separate ego-motion from object-motion in the delta stream → recover depth ordering. High framerate makes the correspondence tractable (tiny inter-frame deltas).
+- t3: a 3D thermal scene (heat sources at multiple depths) + a camera with known ego-motion (drift/shake), rendered at high fps. Gate: depth ordering recovered from the glyph delta stream >> chance. Same principle as the ray-traced room shape: geometry lives in the dynamics.
