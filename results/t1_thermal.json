@@ -1,6 +1,6 @@
 {
   "experiment": "t1 thermal glyph fields",
-  "verdict": "KILL (linear reader)",
+  "verdict": "KILL",
   "gate": {
     "positions_best": -0.1679,
     "n_resolutions_ge_090": 0
@@ -17,8 +17,10 @@
       },
       "positions_mean_r2": -0.2493,
       "intensity_mean_r2": -0.8994,
+      "mlp_positions_mean_r2": -0.2845,
+      "mlp_intensity_mean_r2": -1.3841,
       "chars_per_frame": 432,
-      "encode_ms": 0.87
+      "encode_ms": 1.95
     },
     "48": {
       "r2_per_param": {
@@ -31,8 +33,10 @@
       },
       "positions_mean_r2": -0.2691,
       "intensity_mean_r2": -0.9305,
+      "mlp_positions_mean_r2": -0.3349,
+      "mlp_intensity_mean_r2": -1.1488,
       "chars_per_frame": 1728,
-      "encode_ms": 1.16
+      "encode_ms": 1.71
     },
     "96": {
       "r2_per_param": {
@@ -45,13 +49,15 @@
       },
       "positions_mean_r2": -0.1679,
       "intensity_mean_r2": -0.7383,
+      "mlp_positions_mean_r2": -0.8966,
+      "mlp_intensity_mean_r2": -0.584,
       "chars_per_frame": 6912,
-      "encode_ms": 3.07
+      "encode_ms": 1.88
     }
   },
   "n_train": 600,
   "n_test": 200,
   "seed": 42,
   "note": "built in-house after two phantom lane reports; artifacts on disk by construction",
-  "honest_note": "After 3 harness bugs died in the yard (numerical scaling -> R2 -843k; slow-trajectory time-split = dial-range extrapolation, the X6 lesson recurring -> R2 -266; both fixed), the clean run lands: the LINEAR ridge reader recovers positions at ~0.2-0.35 R2 EQUALLY from the raw thermal field, the continuous luminance, and the glyph codes (controls run). The representation is NOT the bottleneck - the READER LINEARITY is (gaussian blob -> position is nonlinear; two overlapping sources compound it). Per the pre-registered gate (>=0.90): KILL for the linear version. Named follow-up: t1b with the E13b nonlinear reader (sklearn MLP hidden 16 alpha 0.1) - the day-third recurrence of the per-dial/per-modality reader lesson."
+  "t1b_note": "The E13b-convention MLP (hidden 32, alpha 0.1) does NOT recover thermal positions either: pos R2 -0.28/-0.33/-0.90 across densities (worse than ridge \u2014 overfit at 600 samples x 432-6912 features). REVISION of the t1 interpretation: it is not merely reader linearity \u2014 the two-overlapping-gaussian scene is not recoverable from the sparse quantized V=32 codes at this sample size by either reader class. Contrast with c1 (0.98): c1 used the CONTINUOUS 4-channel features on a single strong-edged sphere. Named next: (a) the continuous-channel features on the thermal scene (c1 parity), or (b) the single-source thermal scene. Encode economics unaffected (~1ms/frame)."
 }

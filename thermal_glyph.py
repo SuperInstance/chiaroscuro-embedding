@@ -129,6 +129,28 @@ def r2_per_col(Y, pred):
     return out
 
 
+def prep_features(Xtr, Xte):
+    """The hygiene from the ridge path, shared: drop near-dead columns,
+    center per column, scale globally."""
+    sd_col = Xtr.std(0)
+    gstd = Xtr.std() + 1e-9
+    keep = sd_col > 0.02 * gstd
+    Xtr, Xte = Xtr[:, keep], Xte[:, keep]
+    mu = Xtr.mean(0)
+    return ((Xtr - mu) / gstd).astype(np.float64), ((Xte - mu) / gstd).astype(np.float64)
+
+
+def mlp_reader(Xtr, Ytr, Xte):
+    """t1b: the E13b-convention nonlinear reader (the day's third reader lesson)."""
+    from sklearn.neural_network import MLPRegressor
+    A, C = prep_features(Xtr, Xte)
+    mu_y, sd_y = Ytr.mean(0), Ytr.std(0) + 1e-9
+    m = MLPRegressor(hidden_layer_sizes=(32,), alpha=0.1, max_iter=3000,
+                     random_state=42)
+    m.fit(A, (Ytr - mu_y) / sd_y)
+    return m.predict(C) * sd_y + mu_y
+
+
 def main():
     P = scene_params(N_TRAIN + N_TEST, SEED)
     results = {}
@@ -147,18 +169,23 @@ def main():
         Ytr, Yte = P[:N_TRAIN], P[N_TRAIN:]
         pred = ridge_fit_predict(Xtr, Ytr, Xte)
         r2 = r2_per_col(Yte, pred)
+        pred_m = mlp_reader(Xtr, Ytr, Xte)
+        r2m = r2_per_col(Yte, pred_m)
         pos_r2 = [r2[0], r2[1], r2[3], r2[4]]   # x1,y1,x2,y2
+        pos_r2m = [r2m[0], r2m[1], r2m[3], r2m[4]]
         results[str(density)] = {
             "r2_per_param": dict(zip(["x1", "y1", "I1", "x2", "y2", "I2"],
                                      r2)),
             "positions_mean_r2": round(float(np.mean(pos_r2)), 4),
             "intensity_mean_r2": round(float(np.mean([r2[2], r2[5]])), 4),
+            "mlp_positions_mean_r2": round(float(np.mean(pos_r2m)), 4),
+            "mlp_intensity_mean_r2": round(float(np.mean([r2m[2], r2m[5]])), 4),
             "chars_per_frame": int(X.shape[1]),
             "encode_ms": round(enc_ms, 2),
         }
-        print(f"[t1] density {density}: pos R2 {results[str(density)]['positions_mean_r2']}"
-              f" int R2 {results[str(density)]['intensity_mean_r2']}"
-              f" {X.shape[1]} cells {enc_ms:.1f}ms/frame", flush=True)
+        print(f"[t1] density {density}: ridge pos {results[str(density)]['positions_mean_r2']}"
+              f" | MLP pos {results[str(density)]['mlp_positions_mean_r2']}"
+              f" ({X.shape[1]} cells {enc_ms:.1f}ms/frame)", flush=True)
 
     pos_all = [v["positions_mean_r2"] for v in results.values()]
     knee = sum(1 for p in pos_all if p >= 0.90)
