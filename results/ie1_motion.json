@@ -1,0 +1,115 @@
+{
+  "experiment": "ie1 temporal fam codes \u2014 Reichardt correlators on the glyph lattice (the lobula-plate build)",
+  "verdict": "INCONCLUSIVE",
+  "gate": {
+    "metric": "primary reader: mean R2 over direction targets (sin theta, cos theta)",
+    "threshold": ">= 0.5 at >= 2 densities (c1 house gate)",
+    "direction_mean_r2_by_density": {
+      "24": 0.1895,
+      "48": 0.7107
+    },
+    "best": 0.7107,
+    "n_densities_pass": 1
+  },
+  "question": "can a text-only ridge reader recover the true drift velocity of a scene from the Reichardt motion-code stream (4 pooled fam codes/frame) alone?",
+  "scene": "dark field + static radial key light + static 8x8 checker (distractors) + 2 bright gaussian blobs (sigma 14-22 px, I 0.65-1.0) drifting with a GLOBAL velocity, periodic wrap",
+  "data": {
+    "n_scenes": 48,
+    "velocities": "8 directions x 3 speeds (0.10/0.25/0.45 frame-widths/s) x 2 reps",
+    "fps": 20,
+    "seconds_per_scene": 2.0,
+    "frames_per_scene": 40,
+    "warmup_frames": 1,
+    "split": "scene-level 34/14, seed 42 (no frame leakage: all frames of a scene stay on one side)",
+    "note": "frames within a scene share the target; the reader generalizes across scenes"
+  },
+  "correlator": {
+    "baseline_cells": 1,
+    "delay_frames": 1,
+    "delay_ms": 50.0,
+    "formula": "Cx = S(x,y,t)*S(x-1,y,t-1) - S(x,y,t)*S(x+1,y,t-1); Cy likewise; pool = half-wave-rectified lattice sums -> mx+, mx-, my+, my-",
+    "signal_S": "V=32 glyph code field (tone 0..10, edge 11+; t1 codes_for_temp convention)"
+  },
+  "readers": {
+    "primary": "ridge on the 4 pooled motion codes per frame (the pre-registered motion-code stream)",
+    "diagnostic": "ridge on the full per-cell rectified motion field (4 x rows x cols)",
+    "reference": "ridge on the same 4-code pooling applied to the pre-glyph lum field",
+    "hygiene": "t1 ridge (drop near-dead cols, center, global scale, lam=10)"
+  },
+  "sanity_rightward_fast": {
+    "theta_deg": 0.0,
+    "speed_frac": 0.45,
+    "density": 48,
+    "mx_plus": 36515.0,
+    "mx_minus": 26547.0,
+    "my_plus": 48988.0,
+    "my_minus": 47781.0
+  },
+  "results": {
+    "24": {
+      "primary_direction_mean_r2": 0.1895,
+      "primary_velocity_mean_r2": 0.1452,
+      "primary_r2_per_target": {
+        "sin_theta": 0.1255,
+        "cos_theta": 0.2535,
+        "vx": 0.1645,
+        "vy": 0.126
+      },
+      "diagnostic_r2_per_target": {
+        "sin_theta": -0.1551,
+        "cos_theta": -0.3365,
+        "vx": -1.0053,
+        "vy": 0.0321
+      },
+      "reference_lum_r2_per_target": {
+        "sin_theta": 0.4462,
+        "cos_theta": 0.2112,
+        "vx": 0.0641,
+        "vy": 0.4365
+      },
+      "frames_total": 1920,
+      "frames_train": 1360,
+      "frames_test": 560,
+      "motion_field_dim": 1728,
+      "encode_ms_per_frame": 0.0,
+      "cells": [
+        24,
+        18
+      ]
+    },
+    "48": {
+      "primary_direction_mean_r2": 0.7107,
+      "primary_velocity_mean_r2": 0.7184,
+      "primary_r2_per_target": {
+        "sin_theta": 0.7337,
+        "cos_theta": 0.6878,
+        "vx": 0.6862,
+        "vy": 0.7506
+      },
+      "diagnostic_r2_per_target": {
+        "sin_theta": 0.5117,
+        "cos_theta": -0.0316,
+        "vx": -0.0014,
+        "vy": 0.6422
+      },
+      "reference_lum_r2_per_target": {
+        "sin_theta": 0.6552,
+        "cos_theta": 0.5556,
+        "vx": 0.6502,
+        "vy": 0.7793
+      },
+      "frames_total": 1920,
+      "frames_train": 1360,
+      "frames_test": 560,
+      "motion_field_dim": 6912,
+      "encode_ms_per_frame": 0.0,
+      "cells": [
+        48,
+        36
+      ]
+    }
+  },
+  "settings_note": "glyph dials = t1 primary pin (classic ramp, tone 100, edge 60, thresh 4, gain 10, relief 70)",
+  "wall_clock_s": 11.9,
+  "measured": "direction = drift angle theta = atan2(vy, vx) of the render, encoded (sin, cos); velocity = (vx, vy) in px/s; BOTH are per-scene constants recovered frame-by-frame by the readers; R2 computed on held-out scenes only"
+}
